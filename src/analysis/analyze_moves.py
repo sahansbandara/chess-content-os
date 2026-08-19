@@ -19,11 +19,10 @@ import chess.engine
 from src.analysis.move_quality import classify, win_percent
 from src.validators.moves_contract import validate_moves
 
-MOVES_IN = Path("tests/fixtures/prototype_moves.json")
-ANALYSIS_OUT = Path("output/content/2026-08-19-duolingo-001/analysis.json")
+DEFAULT_MOVES = Path("tests/fixtures/prototype_moves.json")
 
 ENGINE_PATH = os.environ.get("STOCKFISH_PATH", "stockfish")
-DEPTH = 18
+DEPTH = 20  # labels shift between 18 and 20 on close calls; pin it and record it
 MATE_SCORE = 10000
 
 
@@ -75,8 +74,9 @@ def analyse(doc, engine, depth=DEPTH):
     return results
 
 
-def main():
-    doc = json.loads(MOVES_IN.read_text())
+def main(moves_path=None):
+    moves_path = Path(moves_path or DEFAULT_MOVES)
+    doc = json.loads(moves_path.read_text())
 
     # Only analyse what the contract lets through.
     doc = dict(doc)
@@ -89,8 +89,14 @@ def main():
     with chess.engine.SimpleEngine.popen_uci(ENGINE_PATH) as engine:
         results = analyse(doc, engine)
 
+    # moves.json stores "w"/"b"; owner_side is "white"/"black". Normalise, or the
+    # owner's own mistakes are silently never found.
     owner = doc["owner_side"]
-    owner_errors = [r for r in results if r["side"] == owner and r["label"] in ("blunder", "mistake", "inaccuracy")]
+    owner_code = "w" if owner.startswith("w") else "b"
+    owner_errors = [
+        r for r in results
+        if r["side"] == owner_code and r["label"] in ("blunder", "mistake", "inaccuracy")
+    ]
     worst = max(owner_errors, key=lambda r: r["win_percent_drop"], default=None)
 
     out = {
@@ -103,14 +109,17 @@ def main():
         "owner_worst_moment": worst,
     }
 
-    ANALYSIS_OUT.parent.mkdir(parents=True, exist_ok=True)
-    ANALYSIS_OUT.write_text(json.dumps(out, indent=2) + "\n")
+    out_path = Path("output/content") / doc["content_id"] / "analysis.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(out, indent=2) + "\n")
+    out["_path"] = str(out_path)
     return out
 
 
 if __name__ == "__main__":
-    out = main()
-    print(f"analysed {out['plies_analysed']} plies -> {ANALYSIS_OUT}\n")
+    import sys
+    out = main(sys.argv[1] if len(sys.argv) > 1 else None)
+    print(f"analysed {out['plies_analysed']} plies -> {out['_path']}\n")
     print(f"{'ply':>3} {'side':<5} {'san':<8} {'label':<11} {'drop%':>6}  best")
     for r in out["moves"]:
         mark = "  <-- owner" if r["side"] == out["owner_side"] and r["label"] in ("blunder", "mistake") else ""

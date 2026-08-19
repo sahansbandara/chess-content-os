@@ -21,11 +21,7 @@ from src.validators.moves_contract import validate_moves
 
 ROOT = Path(__file__).resolve().parents[2]
 MOVES = ROOT / "tests/fixtures/prototype_moves.json"
-ANALYSIS = ROOT / "output/content/2026-08-19-duolingo-001/analysis.json"
 TEMPLATE = ROOT / "src/renderer/scene.html"
-OUT_DIR = ROOT / "output/content/2026-08-19-duolingo-001"
-FRAME_DIR = OUT_DIR / "frames"
-VIDEO = OUT_DIR / "short.mp4"
 
 W, H, FPS = 1080, 1920, 30
 HOOK_S = 1.6      # hold on the starting position before the first move
@@ -37,8 +33,8 @@ HOOK = "I was already losing<br>and I had no idea"
 OPENING_CAPTION = "White is two pawns up before this clip even starts."
 
 
-def build_scene():
-    doc = json.loads(MOVES.read_text())
+def build_scene(moves_path=None, hook=None, opening_caption=None):
+    doc = json.loads(Path(moves_path or MOVES).read_text())
     doc = dict(doc)
     doc["moves"] = [m for m in doc["moves"] if m["verification_status"] != "unresolved"]
 
@@ -46,7 +42,8 @@ def build_scene():
     if errors:
         raise SystemExit(f"refusing to render: {len(errors)} contract failures: {errors[:3]}")
 
-    analysis = {a["ply"]: a for a in json.loads(ANALYSIS.read_text())["moves"]}
+    analysis_path = ROOT / "output/content" / doc["content_id"] / "analysis.json"
+    analysis = {a["ply"]: a for a in json.loads(analysis_path.read_text())["moves"]}
 
     board = chess.Board(None)
     board.set_board_fen(doc["start_position"]["piece_placement"]["value"])
@@ -93,9 +90,10 @@ def build_scene():
         "hook_s": HOOK_S,
         "step_s": STEP_S,
         "slide_s": SLIDE_S,
-        "hook": HOOK,
-        "opening_caption": OPENING_CAPTION,
+        "hook": hook or HOOK,
+        "opening_caption": opening_caption or OPENING_CAPTION,
         "moves": moves,
+        "content_id": doc["content_id"],
     }
 
 
@@ -106,8 +104,6 @@ def caption_for(m, a):
         return f"{m['san']} — inaccuracy. {a['best_move_san']} was better."
     if label in ("mistake", "blunder"):
         return f"{m['san']} — {label}. {a['best_move_san']} was the move."
-    if m["side"] == "b":
-        return f"{m['san']}. Still losing, still not seeing it."
     return f"{m['san']}."
 
 
@@ -126,12 +122,15 @@ def warm_up(page, shots=3):
         page.screenshot()
 
 
-def render():
-    scene = build_scene()
+def render(moves_path=None, hook=None, opening_caption=None):
+    scene = build_scene(moves_path, hook, opening_caption)
+    out_dir = ROOT / "output/content" / scene["content_id"]
+    frame_dir = out_dir / "frames"
+    video = out_dir / "short.mp4"
     total_frames = int((HOOK_S + len(scene["moves"]) * STEP_S + OUTRO_S) * FPS)
 
-    FRAME_DIR.mkdir(parents=True, exist_ok=True)
-    for old in FRAME_DIR.glob("*.png"):
+    frame_dir.mkdir(parents=True, exist_ok=True)
+    for old in frame_dir.glob("*.png"):
         old.unlink()
 
     with sync_playwright() as p:
@@ -143,7 +142,7 @@ def render():
 
         for n in range(total_frames):
             page.evaluate("n => renderFrame(n)", n)
-            page.screenshot(path=str(FRAME_DIR / f"f{n:05d}.png"))
+            page.screenshot(path=str(frame_dir / f"f{n:05d}.png"))
             if n % 60 == 0:
                 print(f"  frame {n}/{total_frames}", flush=True)
 
@@ -153,16 +152,20 @@ def render():
         [
             "ffmpeg", "-y", "-loglevel", "error",
             "-framerate", str(FPS),
-            "-i", str(FRAME_DIR / "f%05d.png"),
+            "-i", str(frame_dir / "f%05d.png"),
             "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18",
             "-movflags", "+faststart",
-            str(VIDEO),
+            str(video),
         ],
         check=True,
     )
-    return total_frames
+    return total_frames, video
 
 
 if __name__ == "__main__":
-    frames = render()
-    print(f"\nrendered {frames} frames -> {VIDEO}")
+    import sys
+    mp = sys.argv[1] if len(sys.argv) > 1 else None
+    hk = sys.argv[2] if len(sys.argv) > 2 else None
+    oc = sys.argv[3] if len(sys.argv) > 3 else None
+    frames, video = render(mp, hk, oc)
+    print(f"\nrendered {frames} frames -> {video}")

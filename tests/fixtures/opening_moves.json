@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0",
+  "content_id": "2026-08-19-duolingo-002-opening",
+  "source": {
+    "path": "inbox/ScreenRecording_08-18-2026 7-16-25\u202fpm_1.mov",
+    "kind": "duolingo_screen_recording",
+    "duration_s": 41.401678,
+    "fps": 60,
+    "window_s": [
+      0.0,
+      5.25
+    ],
+    "sha256": "776bf242f9efebee63e271812afe9a131b15375dce04d89e9b3dd31b6cbcc261"
+  },
+  "start_position": {
+    "piece_placement": {
+      "value": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+      "provenance": "observed"
+    },
+    "side_to_move": {
+      "value": "w",
+      "provenance": "observed"
+    },
+    "castling_rights": {
+      "value": "KQkq",
+      "provenance": "inferred"
+    },
+    "en_passant": {
+      "value": null,
+      "provenance": "observed"
+    }
+  },
+  "owner_side": "black",
+  "moves": [
+    {
+      "ply": 1,
+      "uci": "e2e4",
+      "san": "e4",
+      "side": "w",
+      "t_observed_s": 0.5,
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 2,
+      "uci": "e7e5",
+      "san": "e5",
+      "side": "b",
+      "t_observed_s": 1.0,
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 3,
+      "uci": "g1f3",
+      "san": "Nf3",
+      "side": "w",
+      "t_observed_s": 1.5,
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 4,
+      "uci": "g8f6",
+      "san": "Nf6",
+      "side": "b",
+      "t_observed_s": 2.0,
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 5,
+      "uci": "b1c3",
+      "san": "Nc3",
+      "side": "w",
+      "t_observed_s": 2.25,
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 6,
+      "uci": "c7c6",
+      "san": "c6",
+      "side": "b",
+      "t_observed_s": 2.75,
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 7,
+      "uci": "f1c4",
+      "san": "Bc4",
+      "side": "w",
+      "t_observed_s": 3.25,
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 8,
+      "uci": "f8c5",
+      "san": "Bc5",
+      "side": "b",
+      "t_observed_s": 3.75,
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 9,
+      "uci": "f3e5",
+      "san": "Nxe5",
+      "side": "w",
+      "t_observed_s": 5.25,
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    }
+  ],
+  "final_piece_placement": {
+    "value": "rnbqk2r/pp1p1ppp/2p2n2/2b1N3/2B1P3/2N5/PPPP1PPP/R1BQK2R",
+    "provenance": "observed"
+  },
+  "verification_summary": {
+    "verified": 9,
+    "human_confirmed": 0,
+    "unresolved": 0
+  }
+}
