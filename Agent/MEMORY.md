@@ -74,11 +74,21 @@ Current tools/dependencies used by the project:
 uv-managed Python 3.11.15
 FFmpeg 8.1.1
 ImageMagick 7.1.2-29
-python-chess
+python-chess 1.11.2          (GPL-3.0+ — drives the repo licence)
 opencv-python-headless 5.0.0.93 (cv2 reports 5.0.0)
 google-genai
 python-dotenv
+Stockfish 18                 /opt/homebrew/bin/stockfish
+Playwright 1.62.0 + Chromium 151.0.7922.34
+Pillow 12.3.0
+pytest 9.1.1                 (dev)
 ```
+
+Playwright gotcha: a stale `chromium-1208` from an older install was already in
+`~/Library/Caches/ms-playwright/`. Playwright 1.62.0 wants build 1234, so
+`playwright install chromium` must be re-run **after** `uv add playwright`
+resolves — chaining them with `&&` in one line can leave the wrong build cached
+and `launch()` fails with "Executable doesn't exist".
 
 System Python should not be replaced for this project.
 
@@ -660,6 +670,47 @@ Never mix the two. A prettier explanation cannot repair an unverified move seque
 - Do not add publishing automation before the generation/evaluation pipeline is reliable.
 - Do not log secrets.
 - Do not assume the generic template's Claude hooks/deployment automation is active in this repo until inspected and tested.
+
+## Truth contract — verified 2026-08-19
+
+The documented 36-move chain was independently replayed with `python-chess`:
+
+```text
+36/36 moves legal from State01 (r1b1r1k1/pp3ppp/8/3rP3/4n3/1BB5/PPP2PPP/2KR3R, white to move)
+every SAN in MEMORY.md matches the derived SAN exactly
+final position == State24 (8/p4kpp/2r5/2P1R1P1/7P/8/P1P5/2K5)
+```
+
+So the chain in this file is self-consistent and legal. That is *not* the same
+as proving it is what the video shows — coverage of observed states was never
+proof of the exact visual path, and that caveat still stands for the ambiguous
+bridges.
+
+Contract files:
+
+```text
+src/validators/moves_contract.py            six hard-fail rules
+src/workers/build_prototype_moves_json.py   builds the fixture, derives SAN
+tests/fixtures/prototype_moves.json         36 plies: 15 verified, 21 unresolved
+tests/test_moves_contract.py                10 tests
+```
+
+Gate behaviour, confirmed:
+
+```text
+full 36-ply document  -> 21 hard failures (all no_unresolved) -> renderer blocked
+plies 1-15 only       -> 0 failures                           -> renderer allowed
+```
+
+Plies 16-36 are marked unresolved **conservatively**, not precisely. Bridges
+16-19 are the documented ambiguous ones, but the bridge -> ply mapping was never
+written to a machine-readable log, so everything after the last known-good bridge
+is blocked rather than guessed. Re-running the ambiguity probe and recording its
+boundaries would narrow this — and plies 1-15 are the interesting middlegame
+section a short would use anyway.
+
+SAN is never hand-typed in the builder. It is derived from UCI against the
+replayed board, so a fixture cannot be born with a SAN/UCI disagreement.
 
 ## Product decisions locked 2026-08-19
 

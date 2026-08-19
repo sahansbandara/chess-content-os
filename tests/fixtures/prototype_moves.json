@@ -1,0 +1,417 @@
+{
+  "schema_version": "1.0",
+  "content_id": "2026-08-19-duolingo-001",
+  "source": {
+    "path": "<MoneyPrinterTurbo>/storage/local_videos/material-3cc02343e1b64dbeb464b7127ad0187b.mov",
+    "kind": "duolingo_screen_recording",
+    "duration_s": 41.4,
+    "fps": 60,
+    "rapid_window_s": [
+      13.5,
+      19.5
+    ],
+    "board": {
+      "x": 0,
+      "y": 962,
+      "size_px": 1320,
+      "square_px": 165,
+      "orientation": "black_perspective_180"
+    }
+  },
+  "start_position": {
+    "piece_placement": {
+      "value": "r1b1r1k1/pp3ppp/8/3rP3/4n3/1BB5/PPP2PPP/2KR3R",
+      "provenance": "observed"
+    },
+    "side_to_move": {
+      "value": "w",
+      "provenance": "inferred"
+    },
+    "castling_rights": {
+      "value": null,
+      "provenance": "unknown"
+    },
+    "en_passant": {
+      "value": null,
+      "provenance": "unknown"
+    }
+  },
+  "owner_side": "black",
+  "moves": [
+    {
+      "ply": 1,
+      "uci": "b3d5",
+      "san": "Bxd5",
+      "side": "w",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 2,
+      "uci": "e4c3",
+      "san": "Nxc3",
+      "side": "b",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 3,
+      "uci": "b2c3",
+      "san": "bxc3",
+      "side": "w",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 4,
+      "uci": "c8e6",
+      "san": "Be6",
+      "side": "b",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 5,
+      "uci": "d5b7",
+      "san": "Bxb7",
+      "side": "w",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 6,
+      "uci": "a8b8",
+      "san": "Rab8",
+      "side": "b",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 7,
+      "uci": "b7d5",
+      "san": "Bd5",
+      "side": "w",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 8,
+      "uci": "e6d5",
+      "san": "Bxd5",
+      "side": "b",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 9,
+      "uci": "d1d5",
+      "san": "Rxd5",
+      "side": "w",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 10,
+      "uci": "f7f6",
+      "san": "f6",
+      "side": "b",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 11,
+      "uci": "h1e1",
+      "san": "Re1",
+      "side": "w",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 12,
+      "uci": "f6e5",
+      "san": "fxe5",
+      "side": "b",
+      "verification_status": "verified",
+      "verification_basis": [
+        "unique_path"
+      ]
+    },
+    {
+      "ply": 13,
+      "uci": "d5e5",
+      "san": "Rdxe5",
+      "side": "w",
+      "verification_status": "verified",
+      "verification_basis": [
+        "legal_path",
+        "local_visual"
+      ],
+      "bridge_id": 10,
+      "model_support": {
+        "provider": "gemini",
+        "model": "gemini-3.6-flash",
+        "supported": true,
+        "confidence": "medium",
+        "log": "logs/gemini_bridge10_image_probe.json"
+      }
+    },
+    {
+      "ply": 14,
+      "uci": "e8e5",
+      "san": "Rxe5",
+      "side": "b",
+      "verification_status": "verified",
+      "verification_basis": [
+        "legal_path",
+        "local_visual"
+      ],
+      "bridge_id": 10,
+      "model_support": {
+        "provider": "gemini",
+        "model": "gemini-3.6-flash",
+        "supported": true,
+        "confidence": "medium",
+        "log": "logs/gemini_bridge10_image_probe.json"
+      }
+    },
+    {
+      "ply": 15,
+      "uci": "e1e5",
+      "san": "Rxe5",
+      "side": "w",
+      "verification_status": "verified",
+      "verification_basis": [
+        "legal_path",
+        "local_visual"
+      ],
+      "bridge_id": 10,
+      "model_support": {
+        "provider": "gemini",
+        "model": "gemini-3.6-flash",
+        "supported": true,
+        "confidence": "medium",
+        "log": "logs/gemini_bridge10_image_probe.json"
+      }
+    },
+    {
+      "ply": 16,
+      "uci": "b8f8",
+      "san": "Rf8",
+      "side": "b",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 17,
+      "uci": "f2f4",
+      "san": "f4",
+      "side": "w",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 18,
+      "uci": "f8f4",
+      "san": "Rxf4",
+      "side": "b",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 19,
+      "uci": "c3c4",
+      "san": "c4",
+      "side": "w",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 20,
+      "uci": "f4f2",
+      "san": "Rf2",
+      "side": "b",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 21,
+      "uci": "c4c5",
+      "san": "c5",
+      "side": "w",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 22,
+      "uci": "f2f6",
+      "san": "Rf6",
+      "side": "b",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 23,
+      "uci": "g2g4",
+      "san": "g4",
+      "side": "w",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 24,
+      "uci": "f6e6",
+      "san": "Re6",
+      "side": "b",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 25,
+      "uci": "e5h5",
+      "san": "Rh5",
+      "side": "w",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 26,
+      "uci": "e6c6",
+      "san": "Rc6",
+      "side": "b",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 27,
+      "uci": "h5e5",
+      "san": "Re5",
+      "side": "w",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 28,
+      "uci": "g8h8",
+      "san": "Kh8",
+      "side": "b",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 29,
+      "uci": "h2h4",
+      "san": "h4",
+      "side": "w",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 30,
+      "uci": "h8g8",
+      "san": "Kg8",
+      "side": "b",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 31,
+      "uci": "e5e8",
+      "san": "Re8+",
+      "side": "w",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 32,
+      "uci": "g8f7",
+      "san": "Kf7",
+      "side": "b",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 33,
+      "uci": "e8e5",
+      "san": "Re5",
+      "side": "w",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 34,
+      "uci": "f7g8",
+      "san": "Kg8",
+      "side": "b",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 35,
+      "uci": "g4g5",
+      "san": "g5",
+      "side": "w",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    },
+    {
+      "ply": 36,
+      "uci": "g8f7",
+      "san": "Kf7",
+      "side": "b",
+      "verification_status": "unresolved",
+      "verification_basis": [],
+      "note": "bridge -> ply mapping unrecorded; re-run the ambiguity probe to narrow"
+    }
+  ],
+  "final_piece_placement": {
+    "value": "8/p4kpp/2r5/2P1R1P1/7P/8/P1P5/2K5",
+    "provenance": "observed"
+  },
+  "verification_summary": {
+    "verified": 15,
+    "human_confirmed": 0,
+    "unresolved": 21
+  }
+}

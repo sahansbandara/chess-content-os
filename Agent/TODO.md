@@ -15,7 +15,7 @@ Full phased plan: `docs/PLAN.md`. Review it before starting implementation.
 
 ## Current — Phase 0 prerequisites
 
-- [ ] Install Stockfish; pin the version in `MEMORY.md`.
+- [x] Install Stockfish — **Stockfish 18** at `/opt/homebrew/bin/stockfish`, responds to `uci`.
 
 - [ ] Choose a commercially-licensed font; embed locally in `assets/renderer/fonts/`.
 - [ ] Draw the pawn mascot as renderer vector shapes — two states first (`intro_peek`, `deflated`) — and prove the popup component in a real 1080×1920 render before drawing the other eight. Spec in `design.md`: cream `#F2EDDF` body, navy `#1E2A44` outline, amber `#E0A33E` accent, slide-in/overshoot/settle/exit timing.
@@ -40,8 +40,9 @@ Known contradictions between committed files. Resolve before implementation star
 
 ## Next — Phase 1, recording to finished mp4
 
-- [ ] Hand-write `moves.json` for the prototype game and freeze the schema (`docs/PLAN.md` 1.1).
-- [ ] Build the schema validator; reject illegal sequences, same-side consecutive moves, and any `unresolved` move reaching the renderer.
+- [x] Hand-write `moves.json` for the prototype game and freeze the schema (`docs/PLAN.md` 1.1) — `tests/fixtures/prototype_moves.json`, built by `src/workers/build_prototype_moves_json.py`.
+- [x] Build the schema validator — `src/validators/moves_contract.py`, all six hard-fail rules, 10 tests, TDD.
+- [ ] Narrow the `unresolved` range: re-run `duolingo_path_ambiguity_probe.py` and record bridge → ply boundaries so plies 16-36 are not blanket-marked. Currently everything after ply 15 is conservatively unresolved because the mapping is not stored anywhere machine-readable.
 - [ ] Make the extraction workers emit `moves.json`.
 - [ ] Build the CLI human move-confirmation step; write `human_confirmed` status.
 - [ ] Install and wire Stockfish analysis to `analysis.json`, kept separate from move truth.
