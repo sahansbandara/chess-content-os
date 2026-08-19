@@ -18,16 +18,21 @@ Full phased plan: `docs/PLAN.md`. Review it before starting implementation.
 - [ ] Install Stockfish; pin the version in `MEMORY.md`.
 - [ ] Choose chess piece artwork licensed for commercial use; rasterise to PNG sprites in `assets/renderer/pieces/`; record source and licence in `design.md`. Popular sets are GPL artwork and are not suitable for monetised video.
 - [ ] Choose a commercially-licensed font; embed locally in `assets/renderer/fonts/`.
-- [ ] Matte **two** Set 2 mascot images to transparent PNG (`intro_peek`, `facepalm`) and build the popup component around them before matting the other eight. Keep a sliver of wall in the sprite (the hands grip it); crop the baked-in decorations so the renderer owns all overlays; expect manual cleanup on the fine ginger hair.
-- [ ] Confirm deliberately that the Set 2 character clears the original-IP rule in `PROJECT_MASTER_CONTEXT.md` §2.1 before monetising — it is a red-haired boy in round glasses, which is the exact axis that rule guards.
+- [ ] **BLOCKED — mascot identity.** All ten `assets/Character/` concepts are derivative of Sherman (DreamWorks, *Mr. Peabody & Sherman*) and are not cleared for output. Decide the replacement direction: a chess-piece character (preferred — no human-character IP surface, and a simple silhouette stays legible at any size) or a human redesign changing at least three identifiers at once.
+- [ ] Once the character is settled: matte **two** sprites (`intro_peek`, `facepalm`) to transparent PNG and prove the popup component in a real 1080×1920 render before touching the other eight. Requirements are in `design.md` — alpha channel, no baked decorations, gripped surfaces included in the sprite.
 - [ ] Clear the outstanding Bridge 10 validation debt: repeat the constrained Gemini control 3-5 times and once with shuffled/reversed frame order. Not a Phase 1 blocker, since Phase 1 uses human confirmation.
+
+## Open — repository and licensing
+
+- [ ] **Decide repository visibility and licence.** It is public with no `LICENSE` file while importing GPL-3.0 `python-chess`. Staying public means the combined work must be GPL-3.0-compatible, which lets anyone legally take and run the whole system. Recommended: return to private until settled — `gh repo edit sahansbandara/chess-content-os --visibility private --accept-visibility-change-consequences`. Not a legal opinion; proper advice warranted before choosing to stay public.
+- [ ] Blocked Set 2 concept art is in public git history from commit `b75abc1`. Deleting from `HEAD` does not remove it from history — going private is the only action that reduces the exposure.
+- [ ] Replace the 7 absolute `/Users/sahansandaruwan/...` paths in `Agent/BRIEF.md`, `Agent/MEMORY.md` and `docs/PROJECT_MASTER_CONTEXT.md` with repository-relative paths. They publish the owner's real name.
 
 ## Open — documentation reconciliation
 
 Known contradictions between committed files. Resolve before implementation starts, or a future session will build the wrong thing.
 
-- [ ] **`design.md` contradicts the locked mascot model.** It still specifies a persistent bottom-centred "Presenter" mascot with a mouth-shape strip. The decision is popup-only edge-peek, three popups per short, bubble carries the speech, no lip sync. Rewrite `design.md` around the popup lifecycle. Highest priority of these.
-- [ ] `PROJECT_MASTER_CONTEXT.md` §2.2 uses `mascot_intro_peek` naming, §2.7 uses `intro_peek.png`. Pick one.
+- [ ] `PROJECT_MASTER_CONTEXT.md` §2.2 uses `mascot_intro_peek` naming, §2.7 uses `intro_peek.png`. `design.md` now reconciles this (file on disk, logical id in `scene.json`) — mirror it back into the master context doc.
 - [ ] `PROJECT_MASTER_CONTEXT.md` §2.4 budgets five mascot popups per short. Cut to three — each popup costs ~1.2s of slide-in/settle/exit, so five spend ~6s of a 36s video on the character moving and never let the board hold attention beyond 8s.
 - [ ] Add to `PROJECT_MASTER_CONTEXT.md` §2.7: the Set 2 wall is load-bearing (hands grip it, so removing it leaves hands gripping nothing), and the source images have no alpha channel at all — the hoodie reads lighter than the background wall, so naive keying destroys the character before it clears the background.
 
@@ -250,6 +255,15 @@ If it passes, apply the same method to Bridges 16–19. If it fails, abandon Gem
 
 ## Done
 
+### Publishing architecture and IP correction (2026-08-19)
+
+- [x] Pulled and reviewed the 8 files added on `main`: `docs/MULTI_PLATFORM_PUBLISHING.md` plus the `platform-metadata`, `content-release`, `social-publishing`, `youtube-publishing`, `meta-publishing`, `tiktok-publishing` and `analytics-feedback` skills (1,428 lines).
+- [x] Adopted the one-release / four-adapter publishing architecture; registered all seven skills in the `CLAUDE.md` skill router.
+- [x] Identified the supplied reference character as Sherman (DreamWorks, *Mr. Peabody & Sherman*) and blocked all ten `assets/Character/` concepts as derivative works. Reversed the Set 2 selection.
+- [x] Rewrote `design.md` around the popup model: character identity marked blocked, persistent-Presenter layout and mouth-shape strip removed, popup lifecycle, three-popup budget, sprite contract, matting note, and enforced occlusion documented.
+- [x] Updated `CLAUDE.md` and `AGENTS.md` for public-repository reality and the GPL-3.0 obligation; corrected the superseded verification-status list in both to the three-file contract.
+- [x] Sharpened non-negotiable 7 in both files: generating from a copyrighted character yields a derivative work, and the test is recognisability rather than novel pixels.
+
 ### Mascot and contract decisions (2026-08-19)
 
 - [x] Reviewed `docs/PROJECT_MASTER_CONTEXT.md` (1,442 lines) and all 20 generated character images.
@@ -332,13 +346,13 @@ If it passes, apply the same method to Bridges 16–19. If it fails, abandon Gem
 
 ## Last session summary
 
-2026-08-19 — Bootstrapped the repository as a project system: copied a relevant 98-file subset of the project template, adopted and tested the session-wrap automation, authored project-specific `CLAUDE.md` / `AGENTS.md` / `README.md` / `design.md`, and created the private GitHub repository with `main` pushed.
+2026-08-19 — Pulled the 8 publishing files added on `main` and adopted their architecture: one verified master short, platform-specific copy, one approval, four independent adapters with per-platform idempotency. The skills are well-built and deliberately conservative about stale API assumptions; they are specifications only, and `src/publishers/` is still empty.
 
-Then reviewed `PROJECT_MASTER_CONTEXT.md` and the 20 generated mascot images. The doc's §8 truth model was stricter than the schema drafted in `docs/PLAN.md`, so `PLAN.md` was corrected to match and the contract was split three ways. Mascot Set 2 (red-haired, edge-peek) was selected over Set 1 on expression legibility at Short scale.
+Two corrections landed. The supplied "original character" reference is Sherman from DreamWorks' *Mr. Peabody & Sherman*, so all ten mascot concepts are derivative works and the Set 2 selection is reversed — new pixels from a copyrighted character do not make an original. And the repository was set public while importing GPL-3.0 `python-chess` with no `LICENSE` file, which is now an open owner decision rather than a footnote.
 
-Ended with four documentation contradictions recorded under **Open** above. `design.md` still describes the superseded persistent-Presenter mascot and is the one most likely to mislead the next session.
+`design.md` was rewritten around the character-agnostic popup mechanism so the work survives whichever replacement character is chosen.
 
-Next: Phase 0 — install Stockfish, settle piece and font licensing, matte two Set 2 mascot images and prove the popup component in a real 1080x1920 render.
+Next: settle the mascot direction (a chess-piece character is the recommendation) and the repository visibility/licence question. Then Phase 0 — Stockfish, piece and font licensing, and the popup component.
 
 ## Update rule
 

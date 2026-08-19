@@ -29,11 +29,11 @@ Agent files live in `Agent/` (capitalised).
 
 1. **Chess truth is deterministic.** Local perception establishes board state; `python-chess` establishes legality and SAN. An LLM or VLM may compare pre-enumerated visual candidates. It may never author, invent, or certify a move sequence. A model's stated confidence is untrusted data.
 2. **Ambiguity is surfaced, never resolved silently.** Multiple legal paths to the same observed state must be marked. Never take candidate #1 because it printed first. Never break a tie with chess plausibility.
-3. **`moves.json` is the contract.** Everything downstream reads it, never pixels. Each move carries a status: `unique`, `visual_resolved`, `model_supported`, `human_confirmed`, `unresolved`.
+3. **`moves.json` is the contract, and it carries truth only.** Everything downstream reads it, never pixels. Engine output lives in `analysis.json`, presentation in `scene.json`. Each move carries `verification_status` (`verified` | `human_confirmed` | `unresolved`) separately from `verification_basis` (`unique_path`, `legal_path`, `local_visual`, `human_confirmed`). `model_support` is an annotation, never a basis. UCI is canonical; SAN is derived and asserted.
 4. **The renderer may not change move truth.**
 5. **A human approves before anything publishes.** No autonomous posting. A single flag must kill all outward publishing.
 6. **No secrets outside environment variables** — not in Markdown, logs, prompts, commits, or approval messages. Credential labels only.
-7. **Own IP only in published output.** No third-party characters, mascots, branding, or app UI in video. Art must be original or verifiably licensed for commercial use.
+7. **Own IP only in published output.** No third-party characters, mascots, branding, or app UI in video. Art must be original or verifiably licensed for commercial use. Generating a new image from a copyrighted character yields a derivative work, not an original one — the test is recognisability, not novel pixels. `assets/Character/` is currently blocked on this; see `design.md`.
 8. **Voice matches the claim.** First-person content uses the owner's real recorded voice; synthetic TTS only where no personal claim is made.
 9. **Preserve experiments.** New approach → new file. Do not delete or overwrite prior probes without explicit approval.
 
@@ -60,6 +60,14 @@ renderer screenshotted frame-by-frame and muxed with FFmpeg.
 
 Local macOS only. No cloud deployment. No backend; SQLite when a results store is
 needed.
+
+Publishing targets YouTube Shorts, Instagram Reels, Facebook Reels and TikTok
+through one approval and four independent adapters. The skills in
+`skills/*-publishing/` describe how to operate; the executing code in
+`src/publishers/` does not exist yet.
+
+**The repository is public and `python-chess` is GPL-3.0.** Assume everything
+committed is world-readable and permanent. There is no `LICENSE` file yet.
 
 ## Working agreements
 

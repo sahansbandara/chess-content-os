@@ -22,11 +22,12 @@ These override convenience, speed, and any model's confidence.
 
 1. **Chess truth is deterministic.** Board state comes from local perception; legality and SAN come from `python-chess`. An LLM or VLM may compare constrained visual candidates but may never author, invent, or certify a move sequence.
 2. **Ambiguity is surfaced, never resolved silently.** When several legal paths reach the same observed board state, mark it. Never accept candidate #1 because it printed first. Never break a score tie by chess plausibility.
-3. **`moves.json` is the contract.** Everything downstream of move verification reads only `moves.json`, never pixels. Every move carries a verification status: `unique`, `visual_resolved`, `model_supported`, `human_confirmed`, or `unresolved`.
+3. **`moves.json` is the contract, and it carries truth only.** Everything downstream of move verification reads `moves.json`, never pixels. Engine output goes in `analysis.json`; presentation goes in `scene.json`. Never put presentation data in the truth file.
+   Each move carries `verification_status` (`verified` | `human_confirmed` | `unresolved`) separately from `verification_basis` (`unique_path`, `legal_path`, `local_visual`, `human_confirmed`). `model_support` is an annotation and is **not** a valid basis — a VLM agreeing with a candidate can never make a move verified. UCI is canonical; SAN is derived and asserted against it. See `docs/PLAN.md` §1.1.
 4. **The renderer may not change move truth.** If a renderer alters, reorders, or drops verified moves, reject the renderer.
 5. **A human approves before anything publishes.** No autonomous publishing. A single config flag must disable all outward publishing.
 6. **No secrets anywhere but env.** Not in Markdown, logs, prompts, commits, approval messages, or agent files. Credential *labels* (`PRIMARY`, `BACKUP`) are fine; values never are.
-7. **Own IP only in output.** No third-party characters, mascots, branding, or UI chrome in published video. The mascot and all art must be original or verifiably permissively licensed, including for commercial use.
+7. **Own IP only in output.** No third-party characters, mascots, branding, or UI chrome in published video. All art must be original or verifiably licensed for commercial use. **Generating a new image from a copyrighted character produces a derivative work, not an original one** — the test is whether a viewer would recognise the source, not whether the pixels are new. The current `assets/Character/` concepts fail this test and are blocked; see `design.md`.
 8. **Voice matches the claim.** Content asserting personal experience ("I blundered here") uses the owner's real recorded voice. Synthetic TTS is only for content that makes no personal claim.
 9. **Preserve experiments.** Do not delete or overwrite prior probes/workers. New approach → new file, unless a migration is explicitly approved.
 
@@ -77,7 +78,7 @@ Report one line before coding:
 ## Current selections
 
 - **Language/runtime:** Python 3.11.15, uv-managed. System Python untouched.
-- **Chess legality:** `python-chess` (GPL-3.0 — matters only if this repo is ever made public)
+- **Chess legality:** `python-chess` (**GPL-3.0 — the repository is now public, so this is live.** See Repository visibility and licensing below)
 - **Engine:** Stockfish, local process (not yet installed)
 - **Video/frames:** FFmpeg 8.1.1, `opencv-python-headless`, Pillow
 - **Renderer:** HTML/CSS scene system, headless screenshot per frame, muxed by FFmpeg. Driven by an explicit `renderFrame(n)` call, never wall-clock animation, so output is a pure function of `moves.json`.
@@ -87,7 +88,8 @@ Report one line before coding:
 - **Copy generation:** LLM, constrained to verified moves + engine output
 - **Evaluator:** chess-truth validators (hard fail) + content evaluator (quality) — both to build
 - **Approval:** Telegram bot, mandatory human gate
-- **First publish target:** YouTube Shorts (only platform with an open official upload API)
+- **Publish targets:** YouTube Shorts, Instagram Reels, Facebook Reels, TikTok — one approval, four independent adapters, per-platform idempotency keyed on `content_id + platform`. YouTube first, since it is the only one with an open official upload API today.
+- **Platform copy:** generated per platform from the same verified chess facts. Wording may vary; chess facts may not.
 - **Backend:** none. Local CLI first; SQLite when a results store is needed.
 - **Deployment:** local macOS only. No cloud target selected.
 
@@ -136,10 +138,21 @@ A better explanation cannot repair an unverified move sequence.
 | Turn a demonstrated flow into a skill | `skills/record-to-skill/SKILL.md` |
 | Prompt design | `skills/prompt-maker/SKILL.md` |
 | Code quality | `skills/code-quality/SKILL.md` |
+| Platform-specific captions | `skills/platform-metadata/SKILL.md` |
+| Build a release bundle before publishing | `skills/content-release/SKILL.md` |
+| Multi-platform upload orchestration | `skills/social-publishing/SKILL.md` |
+| YouTube upload | `skills/youtube-publishing/SKILL.md` |
+| Instagram / Facebook upload | `skills/meta-publishing/SKILL.md` |
+| TikTok upload | `skills/tiktok-publishing/SKILL.md` |
+| Performance snapshots and content experiments | `skills/analytics-feedback/SKILL.md` |
 | End of coding session | `.claude/commands/wrap-session.md` (`/wrap-session`) |
 
 Project skills still to write: `skills/chess-video-reading/`, `skills/chess-content/`,
-`skills/chess-video-editing/`, `skills/content-evaluator/`, `skills/platform-metadata/`.
+`skills/chess-video-editing/`, `skills/content-evaluator/`.
+
+The publishing skills define **how to operate**; the executing code lives in
+`src/publishers/*.py` and does not exist yet. Do not treat a written skill as a
+working publisher.
 
 ## Rules
 
@@ -234,7 +247,26 @@ scanner is changed again, so a future change cannot silently break the sequence.
 - Review the diff before committing
 - Never commit secrets, `.env`, or credentials
 - Branch for features: `feat/feature-name`
-- Repository is **private**. It contains no secrets, but assume it stays private.
+
+### Repository visibility and licensing
+
+The repository is **public** as of 2026-08-19. Two consequences that must be
+respected on every change:
+
+1. **`python-chess` is GPL-3.0 and this project imports it.** Distributing the
+   code — which a public repository does — means the combined work must be
+   GPL-3.0-compatible. There is currently **no `LICENSE` file**, which grants no
+   one permission while the obligation still applies. Resolve deliberately:
+   add GPL-3.0, return the repository to private, or replace the dependency.
+   Publishing under GPL-3.0 means anyone, including a competitor, may legally
+   take and run this system.
+2. **Everything committed is world-readable, and git history is permanent.**
+   Removing a file from `HEAD` does not remove it from history. Before adding any
+   asset, confirm it is original or licensed. Before adding any path, prefer
+   repository-relative over absolute — absolute paths under `/Users/<name>/`
+   publish the owner's real name.
+
+Never rely on the repository being private as a security or IP control.
 
 ## Post-session wrap-up (automatic)
 

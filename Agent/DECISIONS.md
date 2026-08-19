@@ -621,6 +621,75 @@ Open item: `PROJECT_MASTER_CONTEXT.md` §2.1 states the red-haired Pinterest cha
 **Status:**
 Accepted
 
+### 2026-08-19 — Mascot Set 2 blocked: derivative of a copyrighted character
+
+**Decision:**
+Reverse the Set 2 selection made earlier the same day. None of the ten generated concepts in `assets/Character/` are cleared for published output.
+
+The reference image supplied as "the original character" is Sherman from DreamWorks' *Mr. Peabody & Sherman* (2014) — a registered, actively enforced character, not a public-domain or free one. Set 2 retains its identifying combination: ginger swept-up hair, large round black-rimmed glasses, amber eyes, child proportions, and the peek-around-a-white-edge pose, which is the composition of the reference promo still.
+
+**Reason:**
+Copyright covers derivative works. Generating new pixels from a copyrighted character produces a derivative, not an original — the test is whether a viewer would recognise the source, not whether the output is a pixel-level copy. That an image generator produced it is not a defence and arguably evidences the derivation. Any single element here would be unremarkable; the combination is what makes it recognisable.
+
+This is the failure mode the project's own rule in `PROJECT_MASTER_CONTEXT.md` §2.1 exists to prevent.
+
+**Alternatives considered:**
+Publishing Set 2 as-is; changing one identifier such as hair colour only (insufficient — recognisability survives a single change).
+
+**Risk of the decision:**
+Delays Phase 0 mascot work. Accepted — the alternative risks takedowns, channel strikes, and legal exposure on a monetised channel, against an asset the project does not own.
+
+**Resolution direction, preferred order:**
+
+1. **Non-human mascot — a chess-piece character** (knight or pawn with eyes and expressions). No human-character IP surface, thematically native, unmistakably owned, cheaper to animate, and a simple silhouette stays legible at any on-screen size — which also solves the expression-legibility problem that drove the Set 2 choice.
+2. **A redesigned human character** changing at least three identifiers simultaneously: hair colour *and* silhouette, glasses shape, and a different signature pose.
+
+Everything character-agnostic from the Set 2 decision survives: the popup lifecycle, the three-popup budget, the swappable sprite contract, edge-peek as a signature move, the no-baked-decorations rule, and the occlusion validator.
+
+**Status:**
+Accepted, supersedes the Set 2 selection made earlier the same day
+
+### 2026-08-19 — Repository made public; licensing is now unresolved
+
+**Decision:**
+The owner set the repository to public. Record the two consequences and treat the licence question as an open decision requiring the owner's choice, not an implementation detail.
+
+**Reason:**
+
+1. `python-chess` is GPL-3.0 and this project imports it. A public repository distributes the code, so the combined work must be GPL-3.0-compatible. There is currently **no `LICENSE` file**, which grants no one permission while the obligation still applies. Publishing under GPL-3.0 means anyone — including someone starting a competing channel — may legally take and run the whole system.
+2. Git history is permanent and world-readable. The blocked Set 2 concept art was committed in `b75abc1` before the block was known, so it is now in public history. Deleting it from `HEAD` does not remove it from history.
+
+**Alternatives considered:**
+Add GPL-3.0 and stay public (gives the system away); return to private (closes both issues, since GPL obligations attach to distribution); replace `python-chess` with a permissively licensed alternative (substantial rework, and it is the best tool for the job).
+
+**Risk:**
+Remaining public with no licence leaves both the IP exposure and the licence obligation unresolved. Not a legal opinion — proper advice is warranted before choosing to stay public.
+
+**Recommendation:**
+Return the repository to private until the licence and mascot-IP questions are settled. It is one reversible command and preserves the business option.
+
+**Status:**
+Open — requires an owner decision
+
+### 2026-08-19 — Multi-platform publishing: one release, four adapters
+
+**Decision:**
+Adopt the architecture in `docs/MULTI_PLATFORM_PUBLISHING.md` and the seven skills added with it. One verified master short produces platform-specific copy, passes one approval, then fans out to four independent publisher adapters. Idempotency is keyed on `content_id + platform`; a single platform failure retries only that platform.
+
+**Reason:**
+A YouTube-only pipeline would not meet the reach goal, and four unrelated upload systems would duplicate approval, validation, and state logic. The shared-release-plus-adapters shape keeps one approval gate and one audit trail while letting per-platform API differences live in adapter code.
+
+The skills are also correctly conservative in ways worth preserving: `meta-publishing` deliberately refuses to hard-code endpoints and requires checking current official documentation first; `platform-metadata` returns `FACT_GAP` rather than inventing an unsupported chess claim; `analytics-feedback` treats `null` as unavailable rather than zero and records observations rather than causal claims; `tiktok-publishing` will not label a draft upload as published.
+
+**Alternatives considered:**
+YouTube-only; four independent systems; identical copy on every platform.
+
+**Risk:**
+Implementing four APIs before one postable short exists is the main scheduling hazard — the skills are specifications, not working publishers, and `src/publishers/` is still empty. Publishing code stays sequenced after the first manual post, per `docs/PLAN.md`.
+
+**Status:**
+Accepted as architecture; implementation deferred to Phase 2
+
 ---
 
 ## Superseded and resolved
