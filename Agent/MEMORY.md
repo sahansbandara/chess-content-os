@@ -782,6 +782,55 @@ The template's deploy step and `deploy.sh` were deliberately **not** copied — 
 
 Agent files live in `Agent/` (capitalised). The template used lowercase `agent/`; macOS is case-insensitive so both resolve, but all copied references were rewritten to `Agent/` so the repo does not break on a case-sensitive filesystem.
 
+## FULL GAME EXTRACTED — 2026-08-19
+
+`uv run python src/workers/extract_game.py <video> --duration 41.4`
+
+```text
+96 stable states -> 3 transients dropped -> 1 piece repaired
+0 impossible positions, 0 impossible transitions
+96 plies | 3 ambiguous bridges | complete=True
+```
+
+The reconstructed final position equals the last observed board exactly. The
+whole 41.4s game, move 1 to the end:
+
+```text
+1.e4 e5 2.Nf3 Nf6 3.Nc3 c6 4.Bc4 Bc5 5.Nxe5 d5 6.exd5 cxd5 7.Bb3 O-O 8.d4 Bb4
+9.Bd2 Bxc3 10.Bxc3 Re8 11.Qd2 Nc6 12.O-O-O Nxe5 13.dxe5 Ne4 14.Qxd5 Qxd5
+15.Bxd5 Nxc3 16.bxc3 Be6 17.Bxb7 Rab8 18.Bd5 Bxd5 19.Rxd5 f6 20.Re1 Rxe5
+21.Rdxe5 fxe5 22.Rxe5 Rf8 23.c4 Rxf2 24.c5 Rf6 25.g4 Rc6 26.h4 Kf7 27.g5 h6
+28.Rf5+ Kg6 29.Re5 Kf7 30.Rf5+ Ke6 31.Re5+ Kf7 32.Rf5+ Kg6 33.Rd5 hxg5
+34.Rd6+ Rxd6 35.cxd6 Kf6 36.d7 Ke7 37.hxg5 Kxd7 38.Kd2 Ke6 39.Kd3 Kf5
+40.c4 Kxg5 41.Kd4 Kf6 42.Kd5 Ke7 43.c5 Kd7 44.c6+ Kc7 45.Kc5 g6 46.a4 g5
+47.Kd5 g4 48.Kc5 g3
+```
+
+Move 14 confirms the repair: `Qxd5 Qxd5 Bxd5`. The old chain had `Bxd5` landing
+on a rook that was really the queen.
+
+Three bridges remain ambiguous and are **not** resolved — they need human
+confirmation:
+
+```text
+t=16.73  Rxe5 Rdxe5 fxe5 Rxe5   /  Rxe5 Rexe5 fxe5 Rxe5  /  fxe5 ...
+t=21.83  Re5 Kf7 Rf5+           /  Rd5 Kf7 Rf5+
+t=24.80  Re5+ Kf7 Rf5+ Kg6      /  Rd5 Kf7 Rf5+ Kg6
+```
+
+### Two bugs that blocked everything
+
+**Castling rights were never set.** `chess.Board(None)` + `set_board_fen()`
+clears them, so `O-O` was not in `legal_moves`. Both sides castle in this game,
+so reconstruction could never get past move 7 — it was not a perception problem
+at all. `board_from_placement()` infers rights from king/rook placement; that is
+an assumption and must carry `inferred` provenance.
+
+**Blind BFS is infeasible past 3 plies.** Branching is ~35, so depth 8 did not
+finish in 10 minutes. `src/perception/bridge_search.py` bounds the search by the
+number of differing squares (one ply changes at most 4) and orders moves that
+touch a differing square first. Same answers, 3 seconds instead of forever.
+
 ## Extraction: what actually works (2026-08-19)
 
 The 36-move chain recorded in this file is **built on a misclassified piece.**
