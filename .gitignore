@@ -29,3 +29,11 @@ assets/processed/*
 
 # Brainstorm visual companion
 .superpowers/
+
+# Stop-hook cooldown state (local only)
+.claude/.wrap-state
+
+# Rejected mascot concept set (Set 1, brown-haired full-body). Kept on disk for
+# reference per the do-not-delete-experiments rule, but deliberately not committed:
+# 16MB of unused art would be permanent in git history. Set 2 is the chosen mascot.
+assets/Character/1/

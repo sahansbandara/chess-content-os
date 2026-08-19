@@ -18,8 +18,18 @@ Full phased plan: `docs/PLAN.md`. Review it before starting implementation.
 - [ ] Install Stockfish; pin the version in `MEMORY.md`.
 - [ ] Choose chess piece artwork licensed for commercial use; rasterise to PNG sprites in `assets/renderer/pieces/`; record source and licence in `design.md`. Popular sets are GPL artwork and are not suitable for monetised video.
 - [ ] Choose a commercially-licensed font; embed locally in `assets/renderer/fonts/`.
-- [ ] Build the geometric mascot sprite set — idle, happy, shocked, thinking, wincing, celebrating, plus a mouth-shape strip — in `assets/renderer/mascot/`, swappable by folder.
+- [ ] Matte **two** Set 2 mascot images to transparent PNG (`intro_peek`, `facepalm`) and build the popup component around them before matting the other eight. Keep a sliver of wall in the sprite (the hands grip it); crop the baked-in decorations so the renderer owns all overlays; expect manual cleanup on the fine ginger hair.
+- [ ] Confirm deliberately that the Set 2 character clears the original-IP rule in `PROJECT_MASTER_CONTEXT.md` §2.1 before monetising — it is a red-haired boy in round glasses, which is the exact axis that rule guards.
 - [ ] Clear the outstanding Bridge 10 validation debt: repeat the constrained Gemini control 3-5 times and once with shuffled/reversed frame order. Not a Phase 1 blocker, since Phase 1 uses human confirmation.
+
+## Open — documentation reconciliation
+
+Known contradictions between committed files. Resolve before implementation starts, or a future session will build the wrong thing.
+
+- [ ] **`design.md` contradicts the locked mascot model.** It still specifies a persistent bottom-centred "Presenter" mascot with a mouth-shape strip. The decision is popup-only edge-peek, three popups per short, bubble carries the speech, no lip sync. Rewrite `design.md` around the popup lifecycle. Highest priority of these.
+- [ ] `PROJECT_MASTER_CONTEXT.md` §2.2 uses `mascot_intro_peek` naming, §2.7 uses `intro_peek.png`. Pick one.
+- [ ] `PROJECT_MASTER_CONTEXT.md` §2.4 budgets five mascot popups per short. Cut to three — each popup costs ~1.2s of slide-in/settle/exit, so five spend ~6s of a 36s video on the character moving and never let the board hold attention beyond 8s.
+- [ ] Add to `PROJECT_MASTER_CONTEXT.md` §2.7: the Set 2 wall is load-bearing (hands grip it, so removing it leaves hands gripping nothing), and the source images have no alpha channel at all — the hoodie reads lighter than the background wall, so naive keying destroys the character before it clears the background.
 
 ## Next — Phase 1, recording to finished mp4
 
@@ -240,6 +250,17 @@ If it passes, apply the same method to Bridges 16–19. If it fails, abandon Gem
 
 ## Done
 
+### Mascot and contract decisions (2026-08-19)
+
+- [x] Reviewed `docs/PROJECT_MASTER_CONTEXT.md` (1,442 lines) and all 20 generated character images.
+- [x] Adopted the §8 truth model into `docs/PLAN.md`, superseding the weaker single-enum schema: `verification_status` / `verification_basis` / `model_support` split, `model_support` excluded from valid basis values, UCI canonical with SAN asserted, provenance on inferred metadata.
+- [x] Split the contract three ways — `moves.json` (truth), `analysis.json` (engine), `scene.json` (presentation) — so presentation data never enters the truth file.
+- [x] Made mascot cues ply-anchored with a resolved-at-render offset instead of hand-authored absolute timestamps.
+- [x] Promoted mascot occlusion of the discussed move's squares from guideline to hard validator failure.
+- [x] Established that the two character sets are different characters, not variants; selected Set 2 on expression legibility (~260px face vs ~75px at mascot scale) and rejected Set 1.
+- [x] Verified the source images carry no alpha channel, and measured that naive background keying destroys the character before clearing the background — the hoodie reads lighter than the wall and the background is a gradient, not a flat colour.
+- [x] Gitignored the rejected Set 1 art rather than committing 16MB of unused images into permanent history; files remain on disk per the do-not-delete-experiments rule.
+
 ### Project system setup (2026-08-19)
 
 - [x] Confirmed the Bridge 10 candidate-constrained Gemini control passed; recorded caveats and outstanding shuffle/repeat validation.
@@ -311,7 +332,13 @@ If it passes, apply the same method to Bridges 16–19. If it fails, abandon Gem
 
 ## Last session summary
 
-2026-08-19 — Completed the first Gemini video-reading experiment after building a board-only rapid clip, dense 12-FPS evidence, a slowed 72-frame analysis video, and a two-key Gemini fallback client. Gemini successfully processed the video but returned an internally inconsistent 25-move sequence that did not match the local legal reconstruction. Decision: stop treating whole-video Gemini as chess truth. Next experiment: candidate-constrained multi-image control on Bridge 10, which is already locally resolved and therefore provides a falsification test.
+2026-08-19 — Bootstrapped the repository as a project system: copied a relevant 98-file subset of the project template, adopted and tested the session-wrap automation, authored project-specific `CLAUDE.md` / `AGENTS.md` / `README.md` / `design.md`, and created the private GitHub repository with `main` pushed.
+
+Then reviewed `PROJECT_MASTER_CONTEXT.md` and the 20 generated mascot images. The doc's §8 truth model was stricter than the schema drafted in `docs/PLAN.md`, so `PLAN.md` was corrected to match and the contract was split three ways. Mascot Set 2 (red-haired, edge-peek) was selected over Set 1 on expression legibility at Short scale.
+
+Ended with four documentation contradictions recorded under **Open** above. `design.md` still describes the superseded persistent-Presenter mascot and is the one most likely to mislead the next session.
+
+Next: Phase 0 — install Stockfish, settle piece and font licensing, matte two Set 2 mascot images and prove the popup component in a real 1080x1920 render.
 
 ## Update rule
 

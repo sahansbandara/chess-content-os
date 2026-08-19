@@ -50,7 +50,7 @@ Small, unblocking, no dependencies between them.
 | 0.1 | Install Stockfish, pin the version in `MEMORY.md` | `stockfish` responds to `uci` from `uv run` |
 | 0.2 | Choose piece artwork licensed for commercial use; rasterise to PNG sprites; record the source and licence in `design.md` | sprite set in `assets/renderer/pieces/`, licence recorded |
 | 0.3 | Choose a commercially-licensed font; embed locally | font in `assets/renderer/fonts/`, licence recorded |
-| 0.4 | Build the geometric mascot sprite set — idle, happy, shocked, thinking, wincing, celebrating, plus a mouth-shape strip | `assets/renderer/mascot/` populated, swappable by folder |
+| 0.4 | Matte **two** Set 2 images to transparent PNG (`intro_peek`, `facepalm`) and build the popup component around them. Keep a sliver of the wall in the sprite — the hands grip it. Crop baked-in decorations; the renderer owns all overlays. | two production sprites in `assets/renderer/mascot/`, popup proven in a real 1080×1920 test render before the other eight are matted |
 | 0.5 | Repeat the Bridge 10 Gemini control 3–5× and once with shuffled/reversed frames | result recorded in `MEMORY.md`; constrained Gemini either cleared for use on unresolved bridges or dropped from disambiguation |
 
 0.5 is validation debt, not a blocker for Phase 1 — Phase 1 relies on human
@@ -63,10 +63,24 @@ confirmation, not on the VLM.
 **Goal: one postable 9:16 short, produced from the existing prototype recording,
 posted by hand.** No Telegram, no OAuth, no cron.
 
-### 1.1 Freeze the `moves.json` contract
+### 1.1 Freeze the contracts
 
-The keystone. Write it by hand first from the known 36-move sequence, then make
-the extractor emit it. Everything downstream reads only this file.
+Two files, and the split matters: **`moves.json` carries truth only. Presentation
+never touches it.**
+
+```text
+moves.json     what happened on the board, and how well we know it
+analysis.json  what the engine thinks of it
+scene.json     how it gets presented (derived from the two above)
+```
+
+Write each by hand first from the known prototype game, then make the pipeline
+emit them.
+
+#### `moves.json` — truth
+
+Schema follows the model in `PROJECT_MASTER_CONTEXT.md` §8, which is stricter
+than the first draft of this plan and replaces it.
 
 ```jsonc
 {
@@ -80,42 +94,127 @@ the extractor emit it. Everything downstream reads only this file.
     "board": { "x": 0, "y": 962, "size_px": 1320, "square_px": 165,
                "orientation": "black_perspective_180" }
   },
+
+  // Observed board facts and inferred metadata are never mixed without provenance.
   "start_position": {
-    "piece_placement": "r1bqr1k1/pp3ppp/2n2n2/3pN3/3P4/1BB5/PPPQ1PPP/R3K2R",
-    "side_to_move": "w",
-    "castling": "KQ-",
-    "note": "side_to_move and castling are inferred, not observed"
+    "piece_placement": { "value": "r1bqr1k1/pp3ppp/2n2n2/3pN3/3P4/1BB5/PPPQ1PPP/R3K2R",
+                         "provenance": "observed" },
+    "side_to_move":    { "value": "w",  "provenance": "inferred" },
+    "castling_rights": { "value": null, "provenance": "unknown"  },
+    "en_passant":      { "value": null, "provenance": "unknown"  }
   },
+
   "owner_side": "black",
+
   "moves": [
     {
-      "ply": 1,
-      "san": "Bxd5",
-      "uci": "b3d5",
+      "ply": 13,
+      "uci": "d5e5",            // canonical representation
+      "san": "Rdxe5",           // derived from the board, asserted against uci
       "side": "w",
-      "t_start_s": 13.75,
-      "t_end_s": 13.92,
-      "verification": "unique",
-      "bridge_id": 1,
-      "candidates_considered": 1,
-      "evidence": []
+      "t_start_s": 16.37,
+      "t_end_s": 16.55,
+
+      "verification_status": "verified",           // verified | human_confirmed | unresolved
+      "verification_basis": ["legal_path", "local_visual"],
+
+      // Model support is an annotation, never a basis. It cannot make a move verified.
+      "model_support": {
+        "provider": "gemini",
+        "model": "gemini-3.6-flash",
+        "supported": true,
+        "confidence": "medium"
+      },
+
+      "bridge_id": 10,
+      "candidates_considered": 2,
+      "evidence": ["output/evidence_test/bridge10_control/frame_034_t016.333.jpg"]
     }
   ],
+
   "pgn": "...",
-  "verification_summary": {
-    "unique": 0, "visual_resolved": 0, "model_supported": 0,
-    "human_confirmed": 0, "unresolved": 0
-  }
+  "verification_summary": { "verified": 0, "human_confirmed": 0, "unresolved": 0 }
 }
 ```
 
-`verification` is one of `unique`, `visual_resolved`, `model_supported`,
-`human_confirmed`, `unresolved`. A `moves.json` containing any `unresolved` move
-must not reach the renderer.
+`verification_basis` values: `unique_path`, `legal_path`, `local_visual`,
+`human_confirmed`. `model_support` is deliberately not among them.
 
-**Done when:** a hand-written `moves.json` for the prototype game validates
-against a schema validator, and `src/validators/` rejects an illegal sequence,
-a same-side consecutive pair, and an `unresolved` entry.
+#### Renderer gate
+
+```text
+verification_status ∈ {verified, human_confirmed}   →  renderer allowed
+verification_status == unresolved                    →  renderer blocked
+model_support.supported == true, basis insufficient  →  renderer blocked
+```
+
+A VLM agreeing with a candidate is evidence *about* the world, not authority over
+it. It can raise confidence in a move that already has deterministic or human
+backing; it can never carry a move on its own.
+
+#### Validator rules (all hard failures)
+
+1. The full sequence must be legal from `start_position`.
+2. No same-side consecutive moves.
+3. For every move, `san` must equal the SAN `python-chess` derives for `uci` on the
+   reconstructed board. A mismatch is a hard failure, not a warning — this is what
+   prevents UCI and SAN drifting apart silently.
+4. No `unresolved` move may reach any downstream consumer.
+5. `model_support.supported == true` with an empty or model-only
+   `verification_basis` is a hard failure.
+6. Every `start_position` field must carry a `provenance`.
+
+#### `scene.json` — presentation, derived
+
+Mascot cues must **not** be hand-authored at absolute timestamps. Anchor them to
+plies and derive the time at render, or every cue goes stale the moment the
+selected moment shifts by a few frames.
+
+```jsonc
+{
+  "schema_version": "1.0",
+  "content_id": "2026-08-19-duolingo-001",
+  "mascot_events": [
+    {
+      "id": "ev_hook",
+      "anchor": { "kind": "video_start" },
+      "offset_s": 0.0,
+      "asset": "intro_peek",
+      "edge": "right",
+      "duration_s": 3.0,
+      "bubble": "2 mistakes and I got mated."
+    },
+    {
+      "id": "ev_blunder",
+      "anchor": { "kind": "ply", "ply": 18 },   // time resolved from moves.json
+      "offset_s": 0.4,
+      "asset": "facepalm",
+      "edge": "left",
+      "duration_s": 2.5,
+      "bubble": "I completely missed this."
+    }
+  ]
+}
+```
+
+Budget: **three mascot popups per short** — hook, mistake reaction, outro CTA.
+Each popup costs roughly 1.2s of slide-in, settle and exit; five popups spend ~6s
+of a 36s video on the character moving and never let the board hold attention for
+longer than 8s. The explain beat works as voice over board.
+
+#### Occlusion validator
+
+`PROJECT_MASTER_CONTEXT.md` §2.6 says not to cover tactically important squares.
+Make that a mechanism rather than an intention: the renderer knows the discussed
+move's from/to squares from the anchored ply. If the mascot's settled bounding box
+intersects either square, fail the scene — then reposition to the opposite edge or
+drop the cue. An unenforced rule will be broken on the first busy position.
+
+**Done when:** hand-written `moves.json`, `analysis.json` and `scene.json` exist
+for the prototype game and validate; and `src/validators/` demonstrably rejects
+each of an illegal sequence, a same-side consecutive pair, a UCI/SAN mismatch, an
+`unresolved` move reaching the renderer, a model-only verification basis, a
+missing provenance field, and an occluding mascot cue.
 
 ### 1.2 Human move confirmation (CLI)
 

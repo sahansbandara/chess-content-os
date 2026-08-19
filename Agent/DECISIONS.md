@@ -570,6 +570,57 @@ A later stack change may require pulling in more rule sets. Cheap to do on deman
 **Status:**
 Accepted
 
+### 2026-08-19 — Adopt the `PROJECT_MASTER_CONTEXT` truth model; split truth from presentation
+
+**Decision:**
+Replace the `moves.json` schema drafted in `docs/PLAN.md` with the stricter model from `docs/PROJECT_MASTER_CONTEXT.md` §8, and split the contract into three files:
+
+```text
+moves.json     truth - what happened, and how well it is known
+analysis.json  engine evaluation
+scene.json     presentation - derived from the two above
+```
+
+Key changes from the earlier draft:
+
+- `verification_status` (`verified` | `human_confirmed` | `unresolved`) is separate from `verification_basis` (`unique_path`, `legal_path`, `local_visual`, `human_confirmed`).
+- `model_support` is an annotation and is explicitly **not** a valid basis value. A VLM cannot make a move verified.
+- UCI is canonical; SAN is derived from the board and asserted against it. A mismatch is a hard failure.
+- Observed board facts and inferred metadata each carry a `provenance` field.
+- Mascot cues are anchored to a `ply` plus an offset and resolved at render time, never hand-authored at absolute timestamps.
+- Mascot occlusion of the discussed move's from/to squares is a hard validator failure, not a guideline.
+
+**Reason:**
+The earlier draft used a single enum containing `model_supported`, which implied a model could constitute a verification status. That contradicts the project's first non-negotiable. Storing UCI and SAN without a reconciliation rule invited silent disagreement. Putting mascot cues in `moves.json` would have put presentation data in the truth file.
+
+**Alternatives considered:**
+Keeping the single-enum draft; one combined contract file; absolute-time mascot cues.
+
+**Risk:**
+More schema surface to validate. Accepted — each addition closes a specific failure mode rather than adding generality.
+
+**Status:**
+Accepted, supersedes the schema drafted earlier the same day
+
+### 2026-08-19 — Mascot Set 2 selected (red-haired, edge-peek); Set 1 rejected
+
+**Decision:**
+The mascot is the Set 2 character — red/ginger hair, round black glasses, white hoodie with a navy knight emblem, navy striped cuffs — in its edge-peek framing. Set 1 (brown hair, square glasses, teal palette, full body) is rejected. Edge-peek becomes the signature move; variety comes from which edge, lean depth, scale and reaction rather than from new poses.
+
+**Reason:**
+The two sets are different characters, not variants, and mixing them would violate the visual-consistency rule in `PROJECT_MASTER_CONTEXT.md` §2.1. Set 2 wins on the metric that decides the mascot's usefulness: at a mascot footprint of ~30% of a 1920-tall frame, Set 2's face renders ~260px tall versus ~75px for Set 1's full-body framing. Expression legibility is the mascot's entire function.
+
+**Alternatives considered:**
+Set 1 (freely placeable, supports more entry directions, but unreadable expressions at scale); regenerating a fresh consistent set (delays Phase 0 and re-runs the consistency risk).
+
+**Risk:**
+Every Set 2 pose is anchored to a wall with the hands gripping it, so the five entry directions in §2.6 are not achievable without regenerating poses. Accepted: a single recognisable move is branding, not a defect. Consequences to handle in production: keep a sliver of wall in the sprite, crop the baked-in decorations (the thought bubble, `?`, `!`, toppling king) so the renderer owns all overlays, and expect the fine ginger hair to need manual cleanup after matting.
+
+Open item: `PROJECT_MASTER_CONTEXT.md` §2.1 states the red-haired Pinterest character was inspiration only. Since Set 2 is a red-haired boy in round black glasses, confirm deliberately that it clears that rule before monetising.
+
+**Status:**
+Accepted
+
 ---
 
 ## Superseded and resolved
