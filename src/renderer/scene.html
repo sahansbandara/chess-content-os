@@ -1,0 +1,155 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Chess Content OS — scene</title>
+<style>
+  html,body{margin:0;padding:0;background:#0E1013;width:1080px;height:1920px;overflow:hidden}
+  *{box-sizing:border-box}
+  #stage{position:relative;width:1080px;height:1920px;
+         font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+         -webkit-font-smoothing:antialiased}
+  .hook{position:absolute;left:0;right:0;top:150px;text-align:center;color:#fff;
+        font-size:72px;font-weight:800;line-height:1.14;letter-spacing:-1px;
+        text-shadow:0 4px 22px rgba(0,0,0,.55);padding:0 90px}
+  #board{position:absolute;left:130px;top:520px;width:820px;height:820px;
+         border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  #squares{position:absolute;inset:0}
+  #pieces{position:absolute;inset:0}
+  .sq{position:absolute;width:102.5px;height:102.5px}
+  .hl{position:absolute;width:102.5px;height:102.5px;background:#E0A33E;opacity:.34}
+  .pc{position:absolute;width:102.5px;height:102.5px}
+  #evalwrap{position:absolute;left:130px;top:1378px;width:820px;height:16px;
+            background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden}
+  #evalfill{position:absolute;left:0;top:0;bottom:0;background:#C65454;border-radius:99px}
+  #evaltxt{position:absolute;left:130px;top:1408px;width:820px;color:#8D96A3;
+           font-size:24px;font-weight:700;letter-spacing:.5px}
+  #movetxt{position:absolute;right:130px;top:1408px;width:400px;text-align:right;
+           color:#E8EDF3;font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+  #caption{position:absolute;left:130px;right:130px;bottom:300px;
+           background:rgba(255,255,255,.08);border-left:8px solid #E0A33E;
+           border-radius:12px;padding:30px 34px;color:#F2F5F8;
+           font-size:38px;font-weight:650;line-height:1.42}
+  .safe{position:absolute;pointer-events:none}
+</style>
+
+<div id="stage">
+  <div class="hook" id="hook"></div>
+  <div id="board"><div id="squares"></div><div id="pieces"></div></div>
+  <div id="evalwrap"><div id="evalfill"></div></div>
+  <div id="evaltxt"></div>
+  <div id="movetxt"></div>
+  <div id="caption"></div>
+</div>
+
+<script>
+const SCENE = window.__SCENE__ || {};
+const SQ = 102.5;
+const CREAM = "#F2EDDF", NAVY = "#1E2A44";
+
+// --- original vector piece glyphs -------------------------------------------
+// Drawn here rather than shipped as art: nothing to license, nothing to attribute.
+const GLYPH = {
+  // Silhouettes deliberately differ in OUTLINE and HEIGHT, not just detail —
+  // at 100px a chess piece has to be identifiable in one glance.
+  p:'<circle cx="50" cy="50" r="11"/><path d="M35 84 q3 -16 15 -23 q12 7 15 23 z"/>',
+  r:'<path d="M29 84 v-27 h-4 v-17 h9 v7 h6 v-7 h12 v7 h6 v-7 h9 v17 h-4 v27 z"/>',
+  n:'<path d="M33 84 q-2 -21 11 -31 q-5 -7 -1 -13 q5 5 9 1 q4 -8 9 -5 q15 5 17 22 q2 15 1 26 z"/>',
+  b:'<circle cx="50" cy="27" r="6"/><path d="M33 84 q0 -20 13 -30 q-7 -9 4 -15 q11 6 4 15 q13 10 13 30 z"/>',
+  q:'<circle cx="50" cy="15" r="5"/><path d="M30 84 q-2 -23 9 -31 l-9 -21 l13 11 l7 -17 l7 17 l13 -11 l-9 21 q11 8 9 31 z"/>',
+  k:'<path d="M46 8 h8 v7 h7 v8 h-7 v7 h-8 v-7 h-7 v-8 h7 z"/><path d="M31 84 q-2 -23 9 -31 q-11 -9 3 -14 h14 q14 5 3 14 q11 8 9 31 z"/>'
+};
+
+function pieceSVG(sym){
+  const white = sym === sym.toUpperCase();
+  const d = GLYPH[sym.toLowerCase()];
+  return '<svg viewBox="0 0 100 100" width="'+SQ+'" height="'+SQ+'">'
+       + '<g fill="'+(white?CREAM:NAVY)+'" stroke="'+(white?NAVY:CREAM)+'" stroke-width="4" stroke-linejoin="round">'
+       + d + '</g></svg>';
+}
+
+// Orientation follows the owner's side, so the video shows the game as they saw it.
+function xy(square){
+  const file = square.charCodeAt(0) - 97;
+  const rank = parseInt(square[1], 10);
+  if (SCENE.flip) return { x: (7 - file) * SQ, y: (rank - 1) * SQ };
+  return { x: file * SQ, y: (8 - rank) * SQ };
+}
+
+function drawSquares(){
+  let h = "";
+  for (let r = 0; r < 8; r++)
+    for (let f = 0; f < 8; f++)
+      h += '<div class="sq" style="left:'+(f*SQ)+'px;top:'+(r*SQ)+'px;background:'
+         + (((r+f)%2) ? '#739552' : '#EBECD0') + '"></div>';
+  document.getElementById("squares").innerHTML = h;
+}
+
+const easeInOutCubic = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+
+// --- the only entry point ----------------------------------------------------
+// Output is a pure function of the frame number. No wall clock, no CSS animation,
+// no randomness — the same frame always renders identically.
+function renderFrame(n){
+  const fps = SCENE.fps, t = n / fps;
+
+  const hookEnd = SCENE.hook_s;
+  const step = SCENE.step_s;
+  const slide = SCENE.slide_s;
+
+  let idx = Math.floor((t - hookEnd) / step);
+  let local = 0;
+  if (idx < 0) { idx = 0; }
+  else if (idx >= SCENE.moves.length) { idx = SCENE.moves.length - 1; local = 1; }
+  else { local = Math.min(1, ((t - hookEnd) - idx * step) / slide); }
+  if (t < hookEnd) local = 0;
+
+  const mv = SCENE.moves[idx];
+  const started = t >= hookEnd;
+  const p = easeInOutCubic(local);
+
+  // pieces: the position before this move, with the mover interpolated
+  let html = "";
+  if (started && mv.captured_square && local > 0.35) {
+    // captured piece fades as the attacker lands on it
+    const c = xy(mv.captured_square);
+    const a = Math.max(0, 1 - (local - 0.35) / 0.35);
+    html += '<div class="pc" style="left:'+c.x+'px;top:'+c.y+'px;opacity:'+a.toFixed(3)+'">'
+          + pieceSVG(mv.captured_piece) + '</div>';
+  }
+  for (const [sq, sym] of Object.entries(mv.before)) {
+    if (started && sq === mv.from) continue;
+    if (started && mv.captured_square === sq) continue;
+    const c = xy(sq);
+    html += '<div class="pc" style="left:'+c.x+'px;top:'+c.y+'px">' + pieceSVG(sym) + '</div>';
+  }
+  if (started) {
+    const a = xy(mv.from), b = xy(mv.to);
+    const x = a.x + (b.x - a.x) * p, y = a.y + (b.y - a.y) * p;
+    html += '<div class="pc" style="left:'+x+'px;top:'+y+'px;z-index:5">' + pieceSVG(mv.piece) + '</div>';
+  }
+
+  // last-move highlight, only once the piece has landed
+  let hl = "";
+  if (started && local >= 1) {
+    for (const sq of [mv.from, mv.to]) {
+      const c = xy(sq);
+      hl += '<div class="hl" style="left:'+c.x+'px;top:'+c.y+'px"></div>';
+    }
+  }
+  document.getElementById("pieces").innerHTML = hl + html;
+
+  // eval bar — interpolates with the move so the position is seen collapsing
+  const prev = idx > 0 ? SCENE.moves[idx-1].white_win : SCENE.moves[0].white_win;
+  const cur = mv.white_win;
+  const shown = started ? prev + (cur - prev) * p : SCENE.moves[0].white_win;
+  document.getElementById("evalfill").style.width = shown.toFixed(2) + "%";
+  document.getElementById("evaltxt").textContent = "White " + shown.toFixed(0) + "%";
+
+  document.getElementById("hook").innerHTML = SCENE.hook;
+  document.getElementById("movetxt").textContent = started ? (mv.number + " " + mv.san) : "";
+  document.getElementById("caption").textContent = started ? mv.caption : SCENE.opening_caption;
+}
+
+drawSquares();
+window.renderFrame = renderFrame;
+renderFrame(0);
+</script>

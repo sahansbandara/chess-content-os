@@ -22,3 +22,5 @@ dev = [
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = ["renderer: slow, launches Chromium"]
+addopts = "-m 'not renderer'"

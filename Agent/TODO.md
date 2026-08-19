@@ -45,16 +45,18 @@ Known contradictions between committed files. Resolve before implementation star
 - [ ] Narrow the `unresolved` range: re-run `duolingo_path_ambiguity_probe.py` and record bridge → ply boundaries so plies 16-36 are not blanket-marked. Currently everything after ply 15 is conservatively unresolved because the mapping is not stored anywhere machine-readable.
 - [ ] Make the extraction workers emit `moves.json`.
 - [ ] Build the CLI human move-confirmation step; write `human_confirmed` status.
-- [ ] Install and wire Stockfish analysis to `analysis.json`, kept separate from move truth.
-- [ ] Implement win-percentage-delta move classification; unit-test the threshold boundaries.
+- [x] Stockfish analysis wired to `analysis.json`, separate from move truth — `src/analysis/analyze_moves.py`.
+- [x] Win-percentage-delta classification with boundary tests — `src/analysis/move_quality.py`.
 - [ ] Build the moment selector, targeting the owner's largest win-% drop.
 - [ ] Build the script generator on the fixed four-beat structure, constrained to `analysis.json` facts.
 - [ ] Add a positioning lint that rejects authority-voiced copy.
 - [ ] Record the owner's voice for the first script; build the audio-driven timeline.
 - [ ] Wire Kokoro-82M as the non-personal-content voice path.
-- [ ] Build the renderer: board and piece tweening, then text, then eval bar, then badges and effects, then mascot and bubble.
-- [ ] Prove renderer determinism: identical inputs produce a byte-identical PNG sequence across two runs.
-- [ ] Prove the renderer does not alter the move sequence.
+- [x] Renderer first pass: board, original vector piece glyphs, eased tweening, capture fade, last-move highlight, hook, live eval bar, caption band, board flipped to the owner's side. Renders 1080x1920 @30fps, muxed by FFmpeg.
+- [ ] Renderer second pass: move-quality badges and board effects, the freeze beat, then the pawn mascot popup.
+- [ ] **Find a real mistake to build a short around.** Stockfish over plies 1-15 found no blunder and no mistake — one inaccuracy at ply 4 (`Be6`, -6.67%). White is already +243cp at ply 1 and +452 by ply 15, so the decisive error happened *before* 13.50s, outside the reconstructed window. Extend the truth layer backwards, or use a different game.
+- [x] Renderer determinism proven and regression-tested. Required a warm-up pass: Chromium's first screenshot after load antialiases the SVG pieces differently from every later one.
+- [x] Renderer proven not to alter the move sequence (`tests/test_renderer.py`).
 - [ ] Mux to 1080x1920 H.264 with burned captions; verify legibility muted and no content in platform dead zones.
 
 ## Next — chess truth layer
