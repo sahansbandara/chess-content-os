@@ -120,11 +120,19 @@ Values live in `.env`, which is gitignored and never committed.
 - No secrets in code, logs, prompts, commits, or documentation
 - No third-party characters, branding, or app UI in published output
 
-## Licence note
+## Licence
 
-`python-chess` is GPL-3.0. That has no practical effect while this repository is
-private, and would need addressing before making it public.
+**GPL-3.0-or-later.** See [LICENSE](LICENSE).
 
-Piece and mascot artwork must be original or verifiably licensed for commercial
-use — several popular chess piece sets are GPL-licensed art and are not suitable
-for monetised video.
+This is required rather than preferred: `python-chess` is GPL-3.0-or-later and
+this project imports it, so the combined work must be GPL-3.0-compatible. Since
+copyleft applies, anyone who redistributes a modified version of this system has
+to open-source their changes too.
+
+**Artwork.** The mascot and the chess pieces are original vector shapes drawn by
+the renderer — nothing to license and nothing to attribute. This is deliberate:
+several popular chess piece sets are GPL-licensed *artwork* and are unsuitable
+for monetised video, and generating a character from a copyrighted reference
+produces a derivative work rather than an original one. Any future third-party
+asset (fonts, audio) must be verifiably licensed for commercial use and recorded
+in `design.md`.

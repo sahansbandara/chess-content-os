@@ -690,6 +690,59 @@ Implementing four APIs before one postable short exists is the main scheduling h
 **Status:**
 Accepted as architecture; implementation deferred to Phase 2
 
+### 2026-08-19 — Mascot is an original pawn, drawn by the renderer
+
+**Decision:**
+The mascot is a **pawn** with eyes, eyebrows, stub arms and whole-body squash/stretch/tilt, drawn as vector shapes by the renderer rather than shipped as image assets. Replaces the blocked human concepts.
+
+**Reason:**
+
+- It is the learner's piece — weakest, most numerous, the one beginners throw away carelessly. That is the channel's subject matter in one object.
+- It is the only piece whose own rules contain an improvement arc, which matches the rating-journey spine already in `BRIEF.md`.
+- Simplest silhouette in chess, so it stays legible at any on-screen size. That was the exact problem that eliminated the full-body human concept.
+- Zero human-character IP surface — a pawn cannot be a derivative of someone else's character.
+- Drawn by the renderer means no illustrator, no image generation, no background matting, no font/art licence question, and deterministic output. Phase 0 mascot work is unblocked with no external dependency.
+
+Palette: cream body `#F2EDDF`, deep navy outline and features `#1E2A44`, single warm amber accent `#E0A33E`. Deliberately avoids green/yellow/orange/red/gold, which are owned by the move-quality treatments, so a badge firing beside the mascot never reads as part of it.
+
+Ten expression states. `facepalm` is replaced by `deflated` (drooping body, shut eyes) since a pawn has no real hands.
+
+Documented as a later mechanic: the mascot **promotes** as the owner's rating climbs — pawn → knight → bishop → rook → queen — keeping the same eyes, outline and palette. A visible reward structure derived from the owner's own progress, which no competitor's mascot can copy.
+
+**Alternatives considered:**
+A knight (more visually distinctive, but reads as clever/tricky, which is closer to the guru posture the positioning rejects); a redesigned human character (still carries human-character IP risk and needs an artist); commissioning raster art now (delays Phase 0).
+
+**Risk:**
+A vector mascot has a lower ceiling on visual richness than commissioned illustration. Mitigated by keeping a swappable sprite interface in the renderer, so raster art can drop in later without touching scene logic. The board pieces are also switched to original vector glyphs for the same reason, which removes the piece-art licensing problem rather than solving it.
+
+**Status:**
+Accepted
+
+### 2026-08-19 — Repository stays public under GPL-3.0-or-later
+
+**Decision:**
+Keep the repository public, as the owner intends to publish ideas there. Add a `LICENSE` containing the verbatim GNU GPL v3 text and license the project GPL-3.0-or-later. Supersedes the earlier recommendation to return to private.
+
+**Reason:**
+`python-chess` is GPL-3.0-or-later (confirmed: `chess` 1.11.2, `License: GPL-3.0+`) and this project imports it. A public repository distributes the code, so the combined work must be GPL-3.0-compatible — GPL-3.0-or-later is the only correct choice, not a preference.
+
+The constraint is also the best available outcome for staying public: GPL is copyleft, so anyone who takes this system and distributes their version must open-source their changes too. A permissive licence would let a competitor take it and close it.
+
+**Alternatives considered:**
+Return to private (closes the licence and IP exposure, but blocks the owner's stated reason for the repository); staying public with no licence (grants nobody permission while the obligation still applies — the worst combination); replacing `python-chess` with a permissively licensed alternative (substantial rework, and it is the right tool).
+
+**Risk:**
+Anyone may legally run this content OS. Accepted deliberately — the owner's moat is the channel, the voice, and the audience, none of which are in the repository.
+
+**Consequences handled in this change:**
+
+- `LICENSE` added (verbatim GPL v3, 674 lines).
+- The blocked mascot concept art is untracked and gitignored. It remains in public history from commit `b75abc1`; removing it from `HEAD` does not remove it from history, and a history rewrite would require a force-push, which `git-sync-main.sh` deliberately refuses. Flagged as an outstanding item rather than actioned unilaterally.
+- All 7 absolute `/Users/<name>/...` paths replaced with `<repo root>` / `<MoneyPrinterTurbo>` placeholders across `BRIEF.md`, `MEMORY.md`, `TODO.md` and `PROJECT_MASTER_CONTEXT.md`, so the repository no longer publishes the owner's real name in file paths.
+
+**Status:**
+Accepted, supersedes the return-to-private recommendation
+
 ---
 
 ## Superseded and resolved

@@ -65,7 +65,7 @@ Never let an LLM/VLM invent a move merely to complete the sequence.
 Project root:
 
 ```text
-/Users/sahansandaruwan/Dev/chess-content-os
+<repo root>
 ```
 
 Current tools/dependencies used by the project:
@@ -115,7 +115,7 @@ Git was initialized on `main`. Do not assume template session/deploy hooks are a
 ## Prototype source recording
 
 ```text
-/Users/sahansandaruwan/Dev/MoneyPrinterTurbo/storage/local_videos/
+<MoneyPrinterTurbo>/storage/local_videos/
 material-3cc02343e1b64dbeb464b7127ad0187b.mov
 ```
 
@@ -135,7 +135,7 @@ Audio: present
 Local MoneyPrinterTurbo location:
 
 ```text
-/Users/sahansandaruwan/Dev/MoneyPrinterTurbo
+<MoneyPrinterTurbo>
 ```
 
 The app/WebUI works locally, but its first gameplay-editing attempt shortened/chopped the source recording. The project decision is therefore:

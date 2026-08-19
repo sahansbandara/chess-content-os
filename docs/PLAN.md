@@ -48,9 +48,9 @@ Small, unblocking, no dependencies between them.
 | # | Task | Done when |
 |---|---|---|
 | 0.1 | Install Stockfish, pin the version in `MEMORY.md` | `stockfish` responds to `uci` from `uv run` |
-| 0.2 | Choose piece artwork licensed for commercial use; rasterise to PNG sprites; record the source and licence in `design.md` | sprite set in `assets/renderer/pieces/`, licence recorded |
+| 0.2 | Draw original vector piece glyphs in the renderer, matching the mascot's outline weight and palette | all 12 glyphs render legibly at board scale; nothing to license, nothing to attribute |
 | 0.3 | Choose a commercially-licensed font; embed locally | font in `assets/renderer/fonts/`, licence recorded |
-| 0.4 | Matte **two** Set 2 images to transparent PNG (`intro_peek`, `facepalm`) and build the popup component around them. Keep a sliver of the wall in the sprite — the hands grip it. Crop baked-in decorations; the renderer owns all overlays. | two production sprites in `assets/renderer/mascot/`, popup proven in a real 1080×1920 test render before the other eight are matted |
+| 0.4 | Draw the pawn mascot as renderer vector shapes and build the popup component around **two** states (`intro_peek`, `deflated`) | popup proven in a real 1080×1920 test render, slide-in/settle/exit timing per `design.md`, before the other eight states are drawn |
 | 0.5 | Repeat the Bridge 10 Gemini control 3–5× and once with shuffled/reversed frames | result recorded in `MEMORY.md`; constrained Gemini either cleared for use on unresolved bridges or dropped from disambiguation |
 
 0.5 is validation debt, not a blocker for Phase 1 — Phase 1 relies on human

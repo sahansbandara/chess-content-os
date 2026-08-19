@@ -2,7 +2,7 @@
 
 > Status: Active development
 > Last updated: 2026-08-19
-> Repository root: `/Users/sahansandaruwan/Dev/chess-content-os`
+> Repository: https://github.com/sahansbandara/chess-content-os (public, GPL-3.0-or-later)
 > This file replaces the generic project-template content with the current Chess Content OS project context.
 
 ## Project type
@@ -202,7 +202,7 @@ Content Orchestrator
 ### Local environment
 
 - macOS on Apple Silicon MacBook M4.
-- Project: `/Users/sahansandaruwan/Dev/chess-content-os`.
+- Project: `<repo root>`.
 - Project Python: uv-managed Python 3.11.15.
 - System Python is intentionally not replaced.
 - FFmpeg 8.1.1 installed.
@@ -243,7 +243,7 @@ uv.lock
 ### Source recording used for the prototype
 
 ```text
-/Users/sahansandaruwan/Dev/MoneyPrinterTurbo/storage/local_videos/
+<MoneyPrinterTurbo>/storage/local_videos/
 material-3cc02343e1b64dbeb464b7127ad0187b.mov
 ```
 

@@ -62,52 +62,101 @@ When a mascot popup is active, it enters from a screen edge and its speech
 bubble **replaces** the caption band rather than stacking above it — one text
 surface, never two competing.
 
-**Superseded:** an earlier version of this file specified a persistent
-bottom-centred "Presenter" mascot with a mouth-shape strip for lip sync. That
-was chosen when the mascot was assumed to be a flat CSS character. It is
-replaced by the popup model below, per `PROJECT_MASTER_CONTEXT.md` §2.3.
-
 ## Board
 
 - Light squares `#EBECD0`, dark squares `#739552`
-- Pieces from an original or verifiably permissively-licensed set, rasterised
-  once to PNG sprites at target size. **No GPL-licensed piece art in monetised
-  output** — several popular sets are GPL artwork.
+- **Pieces are original vector glyphs drawn by the renderer**, matching the
+  mascot's outline weight and palette. This removes the piece-art licensing
+  problem rather than solving it: several popular chess piece sets are GPL
+  artwork and unsuitable for monetised video, and shipping original vector
+  pieces means there is nothing to license and nothing to attribute.
+- If raster piece art is ever commissioned instead, it must be original or
+  verifiably licensed for commercial use, rasterised once to PNG at target size.
 - Pieces slide with easing; they never teleport
 - Last-move squares stay highlighted
 - Arrows and circles are drawn only from verified moves or engine output — never
   decorative
 
-## Mascot — popup model
+## Mascot — the pawn, popup model
 
-### Character identity: BLOCKED
+### Character: an original pawn
 
-The ten generated concept images in `assets/Character/` are **not cleared for
-use**. They were generated from a reference image of Sherman from DreamWorks'
-*Mr. Peabody & Sherman*, and the selected set retains that character's
-identifying combination — ginger swept-up hair, large round black-rimmed
-glasses, amber eyes, child proportions, and the peek-around-an-edge pose.
-Generating new pixels from a copyrighted character produces a derivative work;
-it does not create an original one.
+The mascot is a **pawn** with eyes and expressions. Not a human character.
 
-This violates the original-IP rule in `PROJECT_MASTER_CONTEXT.md` §2.1.
+Why the pawn specifically, over a knight or any other piece:
 
-Resolution required before any mascot art ships. Preferred direction, in order:
+- **It is the learner's piece.** Weakest, most numerous, and the one beginners
+  throw away carelessly. That is the channel's subject matter in one object.
+- **It promotes.** No other piece carries an improvement arc in its own rules. A
+  pawn that becomes something stronger *is* the "900 → 1200, here is every
+  mistake that got me there" spine, expressed visually.
+- **Simplest silhouette in chess.** A sphere on a tapered collar and base. It
+  stays legible at any on-screen size, which was the entire reason the earlier
+  full-body human concept was rejected.
+- **Zero human-character IP surface.** A pawn cannot be a derivative of somebody
+  else's character.
+- **It can be drawn by the renderer.** No illustrator, no image generation, no
+  background matting, no licence question. Vector shapes only, so it is
+  deterministic and recolourable — which unblocks Phase 0 with no external
+  dependency.
 
-1. **A non-human mascot — a chess piece character** (knight or pawn with eyes and
-   expressions). No human-character IP surface at all, thematically native,
-   unmistakably owned, cheap to animate, and a simple silhouette stays legible at
-   any on-screen size.
-2. **A redesigned human character** changing at least three identifiers
-   simultaneously: hair colour *and* silhouette, glasses shape, and a different
-   signature pose. Changing one identifier is not sufficient.
+Small stub arms are included: `outro_wave` and any hands-to-face beat need them.
 
-Everything below is character-agnostic and survives either choice.
+### Palette
 
-### Sprite contract
+The mascot sits **outside** the board, against the dark page background, so it
+must not collide with either the board or the move-quality colours.
 
-The mascot is a **swappable sprite set**, so replacing the art is a file copy,
-not a code change:
+| Element | Value | Reason |
+|---|---|---|
+| Body | cream `#F2EDDF` | echoes a white pawn; reads against the dark background |
+| Outline & features | deep navy `#1E2A44` | separates the body from light board squares if they ever overlap |
+| Accent | warm amber `#E0A33E` | one accent only; not used by any move-quality label |
+
+Move-quality treatments own green, yellow, orange, red and gold. The mascot never
+uses those as body colour, so a badge firing next to it never reads as part of it.
+
+### Expression set
+
+Ten states. Expression comes from eyes, eyebrows, stub arms, and whole-body
+squash / stretch / tilt — a pawn has no face to over-animate, which is a feature.
+
+| Asset id | Expression |
+|---|---|
+| `intro_peek` | leans in from the edge, eyebrows raised |
+| `confused` | head tilt, one eyebrow up |
+| `good_move` | eyes closed happy, small bounce |
+| `shocked` | eyes wide, body stretched tall, leaning back |
+| `thinking` | eyes up and to one side, slight lean |
+| `explain` | leaning forward toward the board |
+| `celebrate` | squash then stretch, eyes closed, arms up |
+| `shh` | eyes narrowed, one stub arm raised |
+| `deflated` | body drooping, eyes shut — replaces "facepalm", which needs hands a pawn does not really have |
+| `outro_wave` | stub arm waving, gentle side-to-side tip |
+
+### Promotion as a channel mechanic
+
+Documented now, built later. As the owner's rating climbs, the mascot promotes:
+
+```text
+pawn → knight → bishop → rook → queen
+```
+
+Each promotion is a channel milestone the audience can see coming, tied to the
+rating spine already in `BRIEF.md`. It gives the series a visible reward
+structure that no competitor's mascot can copy, because it is derived from the
+owner's own progress. Keep the same eyes, outline and palette across promotions
+so it stays recognisably the same character.
+
+### How it is drawn
+
+**Primary: vector, drawn by the renderer.** SVG/CSS shapes composed at render
+time. No asset files, no alpha channel problem, no matting, no licensing.
+Identical input produces identical output.
+
+**Upgrade route, if raster art is ever commissioned:** the renderer keeps a
+swappable sprite interface, so the vector mascot can be replaced by a PNG set
+without touching scene logic:
 
 ```text
 assets/renderer/mascot/
@@ -119,35 +168,32 @@ assets/renderer/mascot/
 ├── explain.png
 ├── celebrate.png
 ├── shh.png
-├── facepalm.png
+├── deflated.png
 └── outro_wave.png
 ```
 
-Requirements for every sprite:
+Requirements if that route is taken: transparent alpha channel; **no baked-in
+decorations** — no `?`, `!`, thought bubbles, toppling pieces or impact lines,
+because the renderer owns every overlay and a sprite carrying its own bubble
+fights it, while a baked chess prop can assert an event that contradicts the real
+position; consistent proportions, outline weight and palette across the set, with
+only pose and expression changing.
 
-- transparent alpha channel (the current concept images have none — all are
-  opaque 3-channel PNGs)
-- no baked-in decorations. No `?`, `!`, thought bubbles, toppling pieces, or
-  impact lines. **The renderer owns every overlay** — a sprite carrying its own
-  bubble fights the renderer's bubble, and a baked chess prop can assert an event
-  that contradicts the real position.
-- if a pose grips a surface, the gripped surface is part of the sprite —
-  otherwise the hands grip nothing once the background is removed
-- consistent across the set: same face proportions, hair, glasses, outfit,
-  emblem, and rendering style. Only pose and expression change.
-
-Naming: `intro_peek.png` on disk. `mascot_intro_peek` as the logical asset id in
-`scene.json`. Both spellings exist in `PROJECT_MASTER_CONTEXT.md` §2.2 and §2.7;
+Naming: `intro_peek.png` on disk, `mascot_intro_peek` as the logical asset id in
+`scene.json`. Both spellings appear in `PROJECT_MASTER_CONTEXT.md` §2.2 and §2.7;
 this is the reconciliation.
 
-**Matting note:** background removal on these concept renders is not a fuzz key.
-Measured on the current set: the background is a gradient, not a flat colour, and
-the light hoodie reads *brighter* than the backdrop — naive keying destroys the
-character before it clears the background. Proper matting plus manual cleanup of
-fine hair is required per sprite.
+No mouth-shape strip and no lip sync. The bubble carries the speech.
 
-No mouth-shape strip. Lip-syncing a photoreal render is disproportionately hard
-and invisible on a ~2.5 s popup. The bubble carries the speech.
+### Superseded
+
+Two earlier directions in this file are dead:
+
+1. A persistent bottom-centred "Presenter" mascot with a mouth-shape strip —
+   replaced by the popup model, per `PROJECT_MASTER_CONTEXT.md` §2.3.
+2. The human character concepts in `assets/Character/` — blocked as derivative
+   works of a copyrighted character. Untracked from the repository and not to be
+   used in output. See `Agent/DECISIONS.md`.
 
 ### Popup lifecycle
 
@@ -178,20 +224,17 @@ works as voice over board with no character present.
 
 ### Entry directions
 
-Right-edge and left-edge are the primary moves. Alternate between them so the
-format does not become repetitive.
-
-If the chosen character's poses are edge-anchored, **edge-peek is the signature
-move** and variety comes from which edge, lean depth, scale, and reaction — not
-from inventing poses that break the character's visual logic. One recognisable
-move is branding, not a limitation.
+Right-edge and left-edge are primary; alternate between them so the format does
+not become repetitive. A bottom pop-up is also available now that the character
+is not edge-anchored by its pose — the pawn stands on a base and can rise from
+below the caption band.
 
 ### Occlusion is enforced, not requested
 
 The renderer knows the discussed move's from/to squares from the anchored ply in
 `scene.json`. If the mascot's settled bounding box intersects either square, the
-scene **fails** — reposition to the opposite edge or drop the cue. An unenforced
-rule gets broken on the first busy position.
+scene **fails** — reposition to another edge or drop the cue. An unenforced rule
+gets broken on the first busy position.
 
 ## Move-quality treatments
 

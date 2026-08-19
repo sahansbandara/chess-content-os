@@ -16,17 +16,19 @@ Full phased plan: `docs/PLAN.md`. Review it before starting implementation.
 ## Current — Phase 0 prerequisites
 
 - [ ] Install Stockfish; pin the version in `MEMORY.md`.
-- [ ] Choose chess piece artwork licensed for commercial use; rasterise to PNG sprites in `assets/renderer/pieces/`; record source and licence in `design.md`. Popular sets are GPL artwork and are not suitable for monetised video.
+
 - [ ] Choose a commercially-licensed font; embed locally in `assets/renderer/fonts/`.
-- [ ] **BLOCKED — mascot identity.** All ten `assets/Character/` concepts are derivative of Sherman (DreamWorks, *Mr. Peabody & Sherman*) and are not cleared for output. Decide the replacement direction: a chess-piece character (preferred — no human-character IP surface, and a simple silhouette stays legible at any size) or a human redesign changing at least three identifiers at once.
-- [ ] Once the character is settled: matte **two** sprites (`intro_peek`, `facepalm`) to transparent PNG and prove the popup component in a real 1080×1920 render before touching the other eight. Requirements are in `design.md` — alpha channel, no baked decorations, gripped surfaces included in the sprite.
+- [ ] Draw the pawn mascot as renderer vector shapes — two states first (`intro_peek`, `deflated`) — and prove the popup component in a real 1080×1920 render before drawing the other eight. Spec in `design.md`: cream `#F2EDDF` body, navy `#1E2A44` outline, amber `#E0A33E` accent, slide-in/overshoot/settle/exit timing.
+- [ ] Draw the 12 original vector piece glyphs, matching the mascot's outline weight and palette.
 - [ ] Clear the outstanding Bridge 10 validation debt: repeat the constrained Gemini control 3-5 times and once with shuffled/reversed frame order. Not a Phase 1 blocker, since Phase 1 uses human confirmation.
 
 ## Open — repository and licensing
 
-- [ ] **Decide repository visibility and licence.** It is public with no `LICENSE` file while importing GPL-3.0 `python-chess`. Staying public means the combined work must be GPL-3.0-compatible, which lets anyone legally take and run the whole system. Recommended: return to private until settled — `gh repo edit sahansbandara/chess-content-os --visibility private --accept-visibility-change-consequences`. Not a legal opinion; proper advice warranted before choosing to stay public.
-- [ ] Blocked Set 2 concept art is in public git history from commit `b75abc1`. Deleting from `HEAD` does not remove it from history — going private is the only action that reduces the exposure.
-- [ ] Replace the 7 absolute `/Users/sahansandaruwan/...` paths in `Agent/BRIEF.md`, `Agent/MEMORY.md` and `docs/PROJECT_MASTER_CONTEXT.md` with repository-relative paths. They publish the owner's real name.
+- [x] Repository stays **public**, licensed **GPL-3.0-or-later** (`LICENSE` added, verbatim GPL v3). Required, not chosen: `python-chess` is GPL-3.0+ and public distribution triggers it. Copyleft also means anyone redistributing a modified version must open-source their changes.
+- [x] Absolute `/Users/<name>/...` paths replaced with placeholders across `BRIEF.md`, `MEMORY.md`, `TODO.md`, `PROJECT_MASTER_CONTEXT.md`.
+- [x] Blocked mascot concept art untracked and gitignored; files kept on disk for reference.
+- [ ] **Blocked concept art remains in public git history from `b75abc1`.** Untracking removes it from `HEAD` only. Fully removing it requires a history rewrite and a force-push, which `git-sync-main.sh` deliberately refuses — needs an explicit decision. Low urgency: it is unpublished concept art in a small repository, and nothing derivative reaches output.
+- [ ] Add a short licence + attribution note to `README.md` once the first third-party asset (font, audio) is actually introduced.
 
 ## Open — documentation reconciliation
 
@@ -255,6 +257,17 @@ If it passes, apply the same method to Bridges 16–19. If it fails, abandon Gem
 
 ## Done
 
+### Pawn mascot and public licensing (2026-08-19)
+
+- [x] Designed the replacement mascot: an original **pawn** with eyes, eyebrows, stub arms and whole-body squash/stretch, drawn as renderer vector shapes rather than shipped assets. Chosen because it is the learner's piece, it is the only piece whose own rules contain an improvement arc, it has the simplest silhouette in chess so it stays legible at any size, and it carries no human-character IP surface.
+- [x] Built and verified a working visual prototype of all ten expression states, the in-frame popup, and the promotion sequence.
+- [x] Documented mascot promotion (pawn → knight → bishop → rook → queen) as a channel milestone mechanic tied to the rating spine.
+- [x] Switched board pieces to original vector glyphs, removing the piece-art licensing problem instead of solving it.
+- [x] Rewrote the `design.md` mascot section and updated Phase 0 in `docs/PLAN.md` accordingly.
+- [x] Kept the repository public and added `LICENSE` (verbatim GPL v3, 674 lines); project is GPL-3.0-or-later, which `python-chess` requires.
+- [x] Removed all 7 absolute personal paths from tracked files.
+- [x] Untracked and gitignored the blocked mascot concept art.
+
 ### Publishing architecture and IP correction (2026-08-19)
 
 - [x] Pulled and reviewed the 8 files added on `main`: `docs/MULTI_PLATFORM_PUBLISHING.md` plus the `platform-metadata`, `content-release`, `social-publishing`, `youtube-publishing`, `meta-publishing`, `tiktok-publishing` and `analytics-feedback` skills (1,428 lines).
@@ -346,13 +359,13 @@ If it passes, apply the same method to Bridges 16–19. If it fails, abandon Gem
 
 ## Last session summary
 
-2026-08-19 — Pulled the 8 publishing files added on `main` and adopted their architecture: one verified master short, platform-specific copy, one approval, four independent adapters with per-platform idempotency. The skills are well-built and deliberately conservative about stale API assumptions; they are specifications only, and `src/publishers/` is still empty.
+2026-08-19 — Replaced the blocked human mascot with an original **pawn**, drawn as renderer vector shapes: no illustrator, no image generation, no matting, no licence question, and no possibility of being a derivative of someone else's character. All ten expression states, the in-frame popup and the promotion sequence were prototyped and verified. Board pieces switched to original vector glyphs for the same reason, which also removes the piece-art licence hunt from Phase 0.
 
-Two corrections landed. The supplied "original character" reference is Sherman from DreamWorks' *Mr. Peabody & Sherman*, so all ten mascot concepts are derivative works and the Set 2 selection is reversed — new pixels from a copyrighted character do not make an original. And the repository was set public while importing GPL-3.0 `python-chess` with no `LICENSE` file, which is now an open owner decision rather than a footnote.
+Repository stays public at the owner's decision, now licensed GPL-3.0-or-later — required rather than chosen, since `python-chess` is GPL-3.0+ and publishing distributes the combined work. Copyleft is the best available outcome for staying public: anyone redistributing a modified version must open-source their changes.
 
-`design.md` was rewritten around the character-agnostic popup mechanism so the work survives whichever replacement character is chosen.
+Cleaned the public surface: 7 absolute personal paths replaced with placeholders, blocked concept art untracked and gitignored. One item left open — that art is still in public history from `b75abc1`, and removing it would need a force-push the tooling refuses by design.
 
-Next: settle the mascot direction (a chess-piece character is the recommendation) and the repository visibility/licence question. Then Phase 0 — Stockfish, piece and font licensing, and the popup component.
+Next: Phase 0 proper. Install Stockfish, pick a commercially-licensed font, then draw the pawn's first two states and prove the popup in a real 1080x1920 render.
 
 ## Update rule
 

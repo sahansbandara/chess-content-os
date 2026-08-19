@@ -637,7 +637,7 @@ The system Python should not be replaced.
 Prototype recording:
 
 ```text
-/Users/sahansandaruwan/Dev/MoneyPrinterTurbo/storage/local_videos/
+<MoneyPrinterTurbo>/storage/local_videos/
 material-3cc02343e1b64dbeb464b7127ad0187b.mov
 ```
 
