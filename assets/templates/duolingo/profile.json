@@ -1,0 +1,70 @@
+{
+  "timestamp": 10.0,
+  "board_top_ratio": 0.33542538354253837,
+  "orientation": "black",
+  "frame_width": 1320,
+  "frame_height": 2868,
+  "square_size": 165,
+  "templates": {
+    "white_pawn": {
+      "square": "h2",
+      "occupancy": 0.22890725436179982,
+      "file": "white_pawn.npy"
+    },
+    "white_rook": {
+      "square": "h1",
+      "occupancy": 0.3728925619834711,
+      "file": "white_rook.npy"
+    },
+    "white_knight": {
+      "square": "e5",
+      "occupancy": 0.38993572084481176,
+      "file": "white_knight.npy"
+    },
+    "white_bishop": {
+      "square": "c3",
+      "occupancy": 0.31977961432506885,
+      "file": "white_bishop.npy"
+    },
+    "white_queen": {
+      "square": "d2",
+      "occupancy": 0.3570615243342516,
+      "file": "white_queen.npy"
+    },
+    "white_king": {
+      "square": "e1",
+      "occupancy": 0.4268135904499541,
+      "file": "white_king.npy"
+    },
+    "black_pawn": {
+      "square": "d5",
+      "occupancy": 0.2704132231404959,
+      "file": "black_pawn.npy"
+    },
+    "black_rook": {
+      "square": "a8",
+      "occupancy": 0.4424609733700643,
+      "file": "black_rook.npy"
+    },
+    "black_knight": {
+      "square": "f6",
+      "occupancy": 0.43107438016528926,
+      "file": "black_knight.npy"
+    },
+    "black_bishop": {
+      "square": "c8",
+      "occupancy": 0.35577594123048667,
+      "file": "black_bishop.npy"
+    },
+    "black_queen": {
+      "square": "d8",
+      "occupancy": 0.36157943067033976,
+      "file": "black_queen.npy"
+    },
+    "black_king": {
+      "square": "g8",
+      "occupancy": 0.4623324150596878,
+      "file": "black_king.npy"
+    }
+  }
+}

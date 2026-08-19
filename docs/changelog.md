@@ -1,0 +1,5 @@
+# Changelog
+
+## Unreleased
+
+- Template copied.

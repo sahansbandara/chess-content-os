@@ -1,0 +1,31 @@
+# macOS
+.DS_Store
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Runtime / generated content
+inbox/*
+output/*
+logs/*
+assets/raw/*
+assets/processed/*
+
+# Keep directory placeholders
+!inbox/.gitkeep
+!output/.gitkeep
+!logs/.gitkeep
+!assets/raw/.gitkeep
+!assets/processed/.gitkeep
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Brainstorm visual companion
+.superpowers/

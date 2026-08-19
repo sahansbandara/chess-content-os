@@ -1,0 +1,579 @@
+# Chess Content OS — Architecture Decisions
+
+> Last updated: 2026-08-19
+> This file now records Chess Content OS decisions. Generic template decisions are not treated as project facts unless explicitly re-validated in this repository.
+
+## Decision format
+
+### YYYY-MM-DD — Decision title
+
+**Decision:**  
+What was decided.
+
+**Reason:**  
+Why this decision was made.
+
+**Alternatives considered:**  
+Other options.
+
+**Risk:**  
+Downside or tradeoff.
+
+**Status:**  
+Proposed / accepted / changed / rejected / experimental
+
+---
+
+## Project decisions
+
+### 2026-08-18 — Use chess as the first automated social-content vertical
+
+**Decision:**  
+Build the first Chess Content OS workflow around real chess gameplay and learning content, starting with Duolingo Chess recordings.
+
+**Reason:**  
+The source activity already exists naturally, which reduces the burden of inventing a new content-production routine. It also creates a clear truth domain where moves can be validated deterministically.
+
+**Alternatives considered:**  
+Generic AI-generated social videos, travel content, affiliate content, and other unrelated automation verticals.
+
+**Risk:**  
+Chess content may not produce a large audience. The MVP therefore focuses on proving a repeatable low-workflow content engine before investing in monetization infrastructure.
+
+**Status:**  
+Accepted
+
+### 2026-08-18 — Position the content as learning in public, not expert instruction
+
+**Decision:**  
+Use the positioning: "learning chess in public — solve, learn, improve with me."
+
+**Reason:**  
+It is compatible with gameplay mistakes, puzzles, tactics, and visible improvement without requiring the creator to claim expert status.
+
+**Alternatives considered:**  
+Expert coaching positioning and purely entertainment/meme chess content.
+
+**Risk:**  
+The content must still be accurate. All chess claims must be based on verified moves and later Stockfish analysis where appropriate.
+
+**Status:**  
+Accepted
+
+### 2026-08-18 — Keep MoneyPrinterTurbo as a specialist creative worker only
+
+**Decision:**  
+Use MoneyPrinterTurbo only for AI-generated creative video tasks where exact chess-game timing is not the truth source. Do not use it as the gameplay editor or move-reconstruction engine.
+
+**Reason:**  
+The first local test shortened/chopped the gameplay and demonstrated that generic clip-selection logic does not preserve exact chess replay timing.
+
+**Alternatives considered:**  
+Make MoneyPrinterTurbo the primary video-editing pipeline.
+
+**Risk:**  
+This creates two video paths: deterministic chess rendering and optional AI creative generation. The separation is intentional because they have different correctness requirements.
+
+**Status:**  
+Accepted
+
+### 2026-08-18 — Separate chess truth from AI generation
+
+**Decision:**  
+Chess state and move legality are determined by local evidence plus `python-chess`. AI may assist with ambiguous visual evidence and content language but cannot independently certify the move sequence.
+
+**Reason:**  
+Chess provides deterministic legality constraints. Using them makes the system more reliable than trusting an LLM/VLM to reconstruct a game from pixels.
+
+**Alternatives considered:**  
+Ask a video-capable model to read the entire recording and return moves directly.
+
+**Risk:**  
+Local perception errors can still create wrong candidate states. The system therefore keeps ambiguity explicit and validates across temporal evidence.
+
+**Status:**  
+Accepted
+
+### 2026-08-18 — Use piece-placement FEN when full FEN metadata is unavailable
+
+**Decision:**  
+The visual board scanner outputs `board.board_fen()` / piece-placement FEN rather than pretending a screenshot provides full FEN metadata.
+
+**Reason:**  
+A screenshot does not reliably reveal side-to-move, castling rights, en-passant state, or move counters.
+
+**Alternatives considered:**  
+Invent or infer a complete FEN for every frame.
+
+**Risk:**  
+Legal reconstruction requires additional assumptions/context for turn order. Those assumptions must stay separate from the visual board observation.
+
+**Status:**  
+Accepted
+
+### 2026-08-18 — Use V2 color templates and full 64-square scanning
+
+**Decision:**  
+Use RGB + mask piece templates in `assets/templates/duolingo_v2/` and scan all 64 board squares.
+
+**Reason:**  
+The V2 calibration provided clear white/black visual separation and reconstructed the calibration board correctly during visual inspection.
+
+**Alternatives considered:**  
+The earlier mask-only profile and immediate training of a new object detector.
+
+**Risk:**  
+Template matching may not generalize to different themes, devices, animations, or future Duolingo visual changes.
+
+**Status:**  
+Accepted for MVP
+
+### 2026-08-18 — Legal path coverage is not treated as proof of exact visual path
+
+**Decision:**  
+A shortest legal bridge that reaches the target board state is a candidate, not automatically the observed truth when multiple legal paths exist.
+
+**Reason:**  
+Multiple legal move sequences can lead to the same piece-placement board state.
+
+**Alternatives considered:**  
+Take the first BFS path returned.
+
+**Risk:**  
+Ambiguity handling increases implementation complexity, but silent false certainty is unacceptable for the content truth layer.
+
+**Status:**  
+Accepted
+
+### 2026-08-18 — Use Bridge 10 as a visual-method control
+
+**Decision:**  
+Treat the State 12 → State 14 transition as a control case for new visual disambiguation methods.
+
+Known candidates:
+
+```text
+A: Rdxe5 → Rxe5 → Rxe5
+B: Rexe5 → Rxe5 → Rxe5
+```
+
+Local temporal evidence selected candidate A, where the rook on d5 departs first.
+
+**Reason:**  
+A method that cannot reproduce a known visual distinction should not be trusted on the unresolved bridges.
+
+**Alternatives considered:**  
+Test new methods only on unresolved bridges where no reference outcome exists.
+
+**Risk:**  
+One control does not prove general accuracy; more controls will be required later.
+
+**Status:**  
+Accepted
+
+### 2026-08-18 — Borrow VISIONE's temporal-evidence concept without installing VISIONE
+
+**Decision:**  
+Adopt scene/shot/keyframe ideas as a Chess Micro-Shot evidence pipeline implemented locally with FFmpeg/OpenCV. Do not install the full VISIONE stack for the MVP.
+
+**Reason:**  
+The useful idea is preprocessing video into manageable temporal evidence. The full repository is oriented toward a larger retrieval stack and GPU-based analysis that is unnecessary for the current MacBook-first prototype.
+
+**Alternatives considered:**  
+Install and adapt the full VISIONE system.
+
+**Risk:**  
+A simplified local implementation may miss useful advanced retrieval components, but those are not required to solve the current move-reconstruction problem.
+
+**Status:**  
+Accepted
+
+### 2026-08-18 — Follow the deterministic perception → LLM pattern from blind_navigation
+
+**Decision:**  
+Use local frame perception/event detection before invoking an LLM/VLM, and keep a provider abstraction around AI services.
+
+**Reason:**  
+The reviewed `blind_navigation` repository demonstrates the architecture of deterministic CV producing an event before calling a text model. That separation maps well to chess evidence handling.
+
+**Alternatives considered:**  
+Send every raw recording directly to a model.
+
+**Risk:**  
+The local perception layer still requires careful calibration and testing.
+
+**Status:**  
+Accepted as architecture principle
+
+### 2026-08-18 — Use DeepSeek Harness as an architecture reference, not a migration target
+
+**Decision:**  
+Borrow the plugin/provider-seam idea from `deepseek-ai/deepseek-harness` but keep the current Python pipeline independent.
+
+**Reason:**  
+A swappable `VideoUnderstandingProvider` is valuable, while migrating a working prototype into a new harness would add complexity before the core workflow is validated.
+
+**Alternatives considered:**  
+Rebuild the Chess Content OS directly inside DeepSeek Harness.
+
+**Risk:**  
+Some future agent features may need to be reimplemented. This is preferable to premature framework lock-in.
+
+**Status:**  
+Accepted
+
+### 2026-08-18 — Reuse provider/publishing concepts from youtube-automation-agent later
+
+**Decision:**  
+Use `sahansbandara/youtube-automation-agent` as a reference for provider fallback, scheduling, YouTube publishing, and analytics, but not as the chess-vision engine.
+
+**Reason:**  
+Its architecture solves later pipeline stages that Chess Content OS will need after content generation is reliable.
+
+**Alternatives considered:**  
+Merge the two projects now.
+
+**Risk:**  
+Duplicated concepts may temporarily exist across repositories.
+
+**Status:**  
+Accepted for later integration
+
+### 2026-08-18 — Treat free-llm-api-resources as discovery only
+
+**Decision:**  
+Use `jtig37/free-llm-api-resources` only to discover providers; verify models, quotas, pricing, and API details from current provider documentation before implementation.
+
+**Reason:**  
+Fast-moving API lists become stale quickly.
+
+**Alternatives considered:**  
+Treat the repository as the source of truth for free-tier limits.
+
+**Risk:**  
+Provider research requires an extra verification step.
+
+**Status:**  
+Accepted
+
+### 2026-08-19 — Use two Gemini key slots behind a provider client
+
+**Decision:**  
+Configure separate environment variables for primary and backup Gemini credentials and access them through a fallback client. Never commit key values.
+
+**Reason:**  
+Credential redundancy and a provider seam make failures easier to isolate and later support multiple providers.
+
+**Alternatives considered:**  
+One hardcoded key or one comma-separated environment variable.
+
+**Risk:**  
+Two keys from the same provider/project may still share project-level service limits. Key fallback is not equivalent to independent-provider redundancy.
+
+**Status:**  
+Accepted
+
+### 2026-08-19 — Prefer the currently proven working Gemini key first
+
+**Decision:**  
+The key labeled `BACKUP` is attempted first because it passed the live `OK` test. The key labeled `PRIMARY` remains the second attempt after its live test produced a server-side failure.
+
+**Reason:**  
+Runtime should prefer the credential already proven in the current environment.
+
+**Alternatives considered:**  
+Keep the original primary-first order regardless of observed status.
+
+**Risk:**  
+The earlier primary failure may have been transient. The ordering can be revisited after health-check data is collected.
+
+**Status:**  
+Accepted for current development
+
+### 2026-08-19 — Reject open-ended whole-video Gemini move extraction as chess authority
+
+**Decision:**  
+Do not use the result of the full-video Gemini chess probe as the verified move sequence.
+
+**Reason:**  
+The model returned 25 moves marked high confidence, but many conflicted with the legal reconstruction and the output included consecutive same-side moves, which cannot represent a legal alternating chess game.
+
+**Alternatives considered:**  
+Accept the VLM output, prompt it again more strongly, or replace the local move reconstruction with the VLM.
+
+**Risk:**  
+Rejecting open-ended VLM extraction means the local chess pipeline remains necessary. This is the correct tradeoff for accuracy.
+
+**Status:**  
+Rejected as authority
+
+### 2026-08-19 — Narrow Gemini to candidate-constrained visual evidence
+
+**Decision:**  
+The next Gemini test will provide a small chronological image/evidence pack for a known ambiguous transition and ask the model to distinguish constrained alternatives, beginning with Bridge 10.
+
+**Reason:**  
+The model performs poorly when asked to reconstruct the entire rapid game, but it may still add value as a local visual discriminator when the legal candidate set is already known.
+
+**Alternatives considered:**  
+Stop using Gemini entirely or continue whole-video prompt tuning.
+
+**Risk:**  
+The model may still fail the control. If it cannot select the known d5-rook path on Bridge 10, Gemini should be removed from chess move disambiguation and retained only for language/content tasks.
+
+**Status:**  
+Experimental / next test
+
+### 2026-08-19 — MCP and skills are supporting infrastructure, not MVP prerequisites
+
+**Decision:**  
+Build reusable project skills and direct API integrations first. Add MCP only where a standardized reusable tool interface materially improves an existing workflow.
+
+**Reason:**  
+The agent-system guide emphasizes that tools, skills, evaluation, permissions, and approval create the useful system. MCP itself does not solve chess perception or content quality.
+
+**Alternatives considered:**  
+Start by building a custom MCP server or adopting a large agent framework before the content pipeline works.
+
+**Risk:**  
+Some integrations may later require refactoring into MCP tools. This is cheaper than premature infrastructure.
+
+**Status:**  
+Accepted
+
+---
+
+### 2026-08-19 — Bridge 10 candidate-constrained Gemini control passed
+
+**Decision:**
+The candidate-constrained multi-image Gemini control on Bridge 10 passed. Gemini selected candidate A, `d5 → e5` first, matching the local departure-timing result. Gemini therefore remains eligible for move disambiguation, constrained to candidate comparison on small evidence packs.
+
+**Reason:**
+Falsification rule #1 required this control before trusting the method on Bridges 16–19. Logged in `logs/gemini_bridge10_image_probe.json`: model `gemini-3.6-flash`, key label `BACKUP`, 7 frames from 16.250s–16.750s, confidence `medium`, reasoning consistent with the known d5-first departure.
+
+**Alternatives considered:**
+Removing Gemini from disambiguation entirely; continuing whole-video prompt tuning.
+
+**Risk:**
+One passing trial on a control whose answer was already known, with hand-picked frames and only `medium` self-reported confidence. Before applying this to Bridges 16–19 it must be repeated 3–5 times and tested with shuffled/reversed frame order — a model that answers A regardless of frame order has proved nothing.
+
+**Status:**
+Accepted, pending repeat-and-shuffle validation
+
+### 2026-08-19 — Human confirmation is the ambiguity backstop
+
+**Decision:**
+Ambiguous bridges that local evidence and constrained VLM comparison cannot resolve are settled by the owner confirming the move list, not by further research. The reconstructed sequence is presented with uncertain bridges marked; the owner confirms or corrects.
+
+**Reason:**
+The owner played the game and knows what happened. Bridges 16–19 had become an open-ended research blocker holding up the entire content pipeline. A human answer costs ~30 seconds and is more reliable than any current automated method.
+
+**Alternatives considered:**
+Strengthening local temporal piece tracking; training a motion model; leaving the bridges permanently unresolved.
+
+**Risk:**
+Human memory of a fast replay section is imperfect. Mitigation: the confirmation UI shows the candidate paths and the evidence frames, and every move retains its verification status — `human_confirmed` is distinct from `unique`.
+
+**Status:**
+Accepted
+
+### 2026-08-19 — `moves.json` is the contract seam
+
+**Decision:**
+A single `moves.json` file is the boundary between move extraction and everything downstream. It carries PGN, SAN, UCI, source video timestamps, and a per-move verification status: `unique`, `visual_resolved`, `model_supported`, `human_confirmed`, or `unresolved`. No stage after it touches pixels.
+
+**Reason:**
+24 workers currently communicate through ad-hoc JSON in `logs/`. Without a frozen contract every new stage becomes another one-off script. It also makes the input source swappable — a Duolingo recording and a PGN file converge here.
+
+**Alternatives considered:**
+Continuing with per-worker ad-hoc formats; passing a PGN string alone (loses timestamps and verification status).
+
+**Risk:**
+Schema churn early on. Mitigation: freeze it from a real hand-written example before writing consumers.
+
+**Status:**
+Accepted
+
+### 2026-08-19 — Position as a learner sharing mistakes, not a teacher
+
+**Decision:**
+Sharpen the earlier "learning in public" positioning into an explicit content rule: every piece leads with the owner's own mistake and what it cost, framed as avoidance rather than instruction. Copy must never claim expertise the owner does not have.
+
+```text
+Everyone else:  "The best move here is Nf6, and this gambit refutes it."
+This channel:   "2 mistakes and I got mated in 11. Don't do what I did."
+```
+
+**Reason:**
+The chess niche is saturated with authority-voiced instruction from strong players. A visibly improving beginner documenting real mistakes is under-served, and beginners relate to a beginner's blunders more than to a titled player's analysis. It is also the one thing stronger channels cannot copy.
+
+**Alternatives considered:**
+Standard "best move / best gambit" instructional framing; pure entertainment framing.
+
+**Risk:**
+The positioning has a shelf life — it requires the owner to actually improve, or the arc goes stale. Low-rated content also attracts condescending comments. Both accepted; playing regularly becomes part of production, not a hobby beside it.
+
+**Status:**
+Accepted
+
+### 2026-08-19 — Owner's recorded voice for first-person content; TTS only where no personal claim is made
+
+**Decision:**
+Reverses the earlier decision to use Kokoro TTS for all narration. Content asserting personal experience uses the owner's real recorded voice, batch-recorded weekly. Kokoro-82M remains for content that makes no first-person claim, such as pure puzzle shorts.
+
+**Reason:**
+A synthetic voice saying "I made this mistake" is hollow and audibly so. The entire value of the positioning is that a real person is being honest about being bad at something; outsourcing that to a robot voice removes the only defensible differentiator.
+
+**Alternatives considered:**
+Kokoro for everything (cheaper, ~0 recurring time); ElevenLabs (paid, still not a real person).
+
+**Risk:**
+~30 minutes per week of recording time against a demanding degree. Accepted as the cost of the differentiator. Rough phone audio in a quiet room is acceptable and arguably on-brand.
+
+**Status:**
+Accepted, supersedes the TTS-for-everything choice made earlier the same day
+
+### 2026-08-19 — Clip selection targets the owner's mistakes, not the best chess
+
+**Decision:**
+The moment selector picks the owner's own largest evaluation swings, not the objectively most interesting position. Story shape is fixed: the mistake → what it cost → what should have been played → the pattern to avoid.
+
+**Reason:**
+Follows directly from the positioning. It also has a useful side effect: the interesting moments cluster in the middle game, while the currently unresolved ambiguous bridges sit in a drawn endgame shuffle that would be cut from a 35-second short anyway.
+
+**Alternatives considered:**
+Largest swing by either side; engine-rated brilliancies.
+
+**Risk:**
+A game with no clear mistake yields no content. Mitigation: fall back to the puzzle-from-my-own-blunder format, or skip the game.
+
+**Status:**
+Accepted
+
+### 2026-08-19 — House format: the owner's blunder becomes the audience's puzzle
+
+**Decision:**
+Primary content format is "I played this position. It's losing. Can you see why?" — the owner's real mistake presented as a puzzle for the audience.
+
+**Reason:**
+It is simultaneously authentic (a real game), participatory (answers go in comments, which is what actually builds community rather than an audience), and gives a "can you find it?" hook without claiming expertise. It merges the personality lane and the volume lane into one format.
+
+**Alternatives considered:**
+Separate lanes for own-game recaps and Lichess-database puzzles.
+
+**Risk:**
+Requires a supply of the owner's own instructive mistakes, so playing volume gates content volume.
+
+**Status:**
+Accepted
+
+### 2026-08-19 — Deterministic HTML/CSS renderer, driven by explicit frame numbers
+
+**Decision:**
+The renderer is an HTML/CSS scene system screenshotted frame by frame and muxed with FFmpeg, driven by an explicit `renderFrame(n)` call rather than wall-clock CSS animation.
+
+**Reason:**
+The product requirement moved from "clean board animation" to "professional, with a character, speech bubble, and move-quality effects". CSS reaches that polish far faster than hand-positioned Pillow drawing. Driving by frame number rather than wall clock preserves the determinism requirement — identical `moves.json` plus identical assets must produce an identical video.
+
+**Alternatives considered:**
+Pillow frame compositor (recommended earlier the same day, then reversed — faster to render, much slower to make look good); MoviePy; Manim.
+
+**Risk:**
+~1–2 minutes render time per video instead of seconds, and a headless-browser dependency in an unattended pipeline. Both acceptable for an overnight batch.
+
+**Status:**
+Accepted, supersedes the Pillow-compositor choice made earlier the same day
+
+### 2026-08-19 — Original mascot only; no third-party IP in output
+
+**Decision:**
+The on-screen character is an original mascot owned by the project, shipped as a swappable sprite set (expression PNGs plus a mouth-shape strip). No third-party characters, mascots, branding, or app UI appear in published video. Piece and mascot art must be original or verifiably licensed for commercial use.
+
+**Reason:**
+Duolingo's characters are trademarked and copyrighted; using them in monetised daily content invites takedowns and worse, and "it's educational" is a defence to be argued rather than a shield. An owned mascot is also the better business asset — it becomes the thing the channel is recognised by, which rented IP can never do. Several popular chess piece sets are GPL-licensed artwork and are unsuitable for monetised video.
+
+**Alternatives considered:**
+Using Duolingo's characters; using popular GPL-licensed chess piece sets.
+
+**Risk:**
+Good character art is a real dependency that code cannot substitute for. Mitigation: ship a clean geometric mascot behind the sprite interface, commission a proper character sheet when traction justifies it — swapping is a file copy.
+
+**Status:**
+Accepted
+
+### 2026-08-19 — "Presenter" layout selected
+
+**Decision:**
+9:16 layout with the hook at top, board at ~70% width centred, and a wide speech bubble above a bottom-centred mascot. The speech bubble and the subtitle are the same element.
+
+**Reason:**
+Narration needs real caption real estate that never overlaps the board, and merging the bubble with the caption avoids two competing text elements. Platform UI dead zones — top ~7%, right ~13%, bottom ~14% — are hard constraints.
+
+**Alternatives considered:**
+Board-dominant with a thin caption line (too little room for narration); mascot peeking from the right edge (collides with platform action buttons).
+
+**Risk:**
+A smaller board than the board-dominant option. Acceptable at 70% width on a 1080-wide frame.
+
+**Status:**
+Accepted
+
+### 2026-08-19 — YouTube Shorts is the first automated publishing target
+
+**Decision:**
+Automate YouTube Shorts first. Instagram Reels, TikTok, and Facebook come later.
+
+**Reason:**
+It is the only target with an open official upload API usable today. Instagram Reels requires a Business account through the Graph API; TikTok's content posting API requires app review.
+
+**Alternatives considered:**
+Instagram Reels first; manual posting everywhere indefinitely.
+
+**Risk:**
+Single-platform concentration early on. Accepted — a second platform is additive once the first works.
+
+**Status:**
+Accepted
+
+### 2026-08-19 — Adopted the template's session-wrap automation, with the deploy step removed
+
+**Decision:**
+Copied and adopted the project template's `Stop` hook (`.claude/hooks/session-wrap.sh`), the `main` fast-forward script (`.claude/hooks/git-sync-main.sh`), and the wrap-up checklist (`.claude/commands/wrap-session.md`). Every coding session now ends with the agent files updated, a conventional commit, and `main` pushed — automatically, without the owner asking. The template's deploy step and `deploy.sh` were deliberately not copied.
+
+This supersedes the earlier note that these were unvalidated template assumptions. They have now been inspected, adapted to this repository (`Agent/` paths, Python/uv permissions), and adopted.
+
+**Reason:**
+The owner asked for agent files to be updated and pushed automatically at the end of every session. The template already implemented exactly that, and the scripts are safe by construction: `git-sync-main.sh` never commits, never rewrites history, never force-pushes, and refuses any non-fast-forward update to `main`.
+
+**Alternatives considered:**
+Writing a new hook from scratch; a manual end-of-session routine; a `post-commit` git hook.
+
+**Risk:**
+Automatic pushes to `main` with no review gate mean a bad commit reaches the remote immediately. Mitigated by the private repository, the secrets check in the checklist, fast-forward-only enforcement, and full git history for reverts. There is no deploy step, so nothing reaches an audience without the separate human approval gate.
+
+**Status:**
+Accepted
+
+### 2026-08-19 — Selective template adoption, not wholesale copy
+
+**Decision:**
+Copied a relevant subset of `~/Documents/Github/Templates/Project-Template` into this repository — automation hooks, 20 skills, Python and cross-cutting rules, 14 workflows, 12 docs, and the doc templates. Originals were copied, never moved.
+
+Deliberately excluded: the stale `.claude/worktrees/` snapshot, the duplicate `.agents/` and `claude/` skill trees, `.codex/` and `.gemini/`, bootstrap and setup prompts, `deploy/`, `benchmarks/`, `examples/`, the `trading-content` skill, language rules for TypeScript/Go/Rust/Swift/Vue/React/React Native, and the LLM provider matrix docs — which this project's own decisions already say not to treat as authoritative.
+
+**Reason:**
+The template carries ~180 files, most of which describe stacks and workflows this project does not use. Copying all of it would bury the project's own documentation in generic scaffolding.
+
+**Risk:**
+A later stack change may require pulling in more rule sets. Cheap to do on demand.
+
+**Status:**
+Accepted
+
+---
+
+## Superseded and resolved
+
+- **Inherited template automation** — previously recorded as unvalidated template assumptions (`Stop` hook, session wrap-up, `main` fast-forwarding, config-driven deployment). Now inspected and adopted, except deployment, which was dropped. See the 2026-08-19 adoption decision above.
+- **TTS for all narration** — superseded 2026-08-19 by the owner's-voice decision.
+- **Pillow frame compositor** — superseded 2026-08-19 by the HTML/CSS renderer decision.

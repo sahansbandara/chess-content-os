@@ -1,0 +1,142 @@
+{
+  "timestamp": 10.0,
+  "board_top_ratio": 0.33542538354253837,
+  "orientation": "black",
+  "frame_width": 1320,
+  "frame_height": 2868,
+  "square_size": 165,
+  "templates": {
+    "white_pawn": {
+      "square": "h2",
+      "file": "white_pawn.npz",
+      "occupancy": 0.22890725436179982,
+      "mean_rgb": [
+        184.7,
+        202.17,
+        216.17
+      ],
+      "mean_luma": 199.47
+    },
+    "white_rook": {
+      "square": "h1",
+      "file": "white_rook.npz",
+      "occupancy": 0.3728925619834711,
+      "mean_rgb": [
+        188.66,
+        205.95,
+        218.97
+      ],
+      "mean_luma": 203.21
+    },
+    "white_knight": {
+      "square": "e5",
+      "file": "white_knight.npz",
+      "occupancy": 0.38993572084481176,
+      "mean_rgb": [
+        190.86,
+        207.47,
+        220.65
+      ],
+      "mean_luma": 204.89
+    },
+    "white_bishop": {
+      "square": "c3",
+      "file": "white_bishop.npz",
+      "occupancy": 0.31977961432506885,
+      "mean_rgb": [
+        178.38,
+        197.18,
+        212.07
+      ],
+      "mean_luma": 194.26
+    },
+    "white_queen": {
+      "square": "d2",
+      "file": "white_queen.npz",
+      "occupancy": 0.3570615243342516,
+      "mean_rgb": [
+        182.8,
+        200.68,
+        213.87
+      ],
+      "mean_luma": 197.83
+    },
+    "white_king": {
+      "square": "e1",
+      "file": "white_king.npz",
+      "occupancy": 0.4268135904499541,
+      "mean_rgb": [
+        188.71,
+        205.71,
+        218.48
+      ],
+      "mean_luma": 203.02
+    },
+    "black_pawn": {
+      "square": "d5",
+      "file": "black_pawn.npz",
+      "occupancy": 0.2704132231404959,
+      "mean_rgb": [
+        71.97,
+        98.37,
+        110.62
+      ],
+      "mean_luma": 93.64
+    },
+    "black_rook": {
+      "square": "a8",
+      "file": "black_rook.npz",
+      "occupancy": 0.4424609733700643,
+      "mean_rgb": [
+        68.12,
+        93.81,
+        106.32
+      ],
+      "mean_luma": 89.25
+    },
+    "black_knight": {
+      "square": "f6",
+      "file": "black_knight.npz",
+      "occupancy": 0.43107438016528926,
+      "mean_rgb": [
+        71.88,
+        98.71,
+        111.39
+      ],
+      "mean_luma": 93.92
+    },
+    "black_bishop": {
+      "square": "c8",
+      "file": "black_bishop.npz",
+      "occupancy": 0.35577594123048667,
+      "mean_rgb": [
+        71.36,
+        97.52,
+        109.62
+      ],
+      "mean_luma": 92.83
+    },
+    "black_queen": {
+      "square": "d8",
+      "file": "black_queen.npz",
+      "occupancy": 0.36157943067033976,
+      "mean_rgb": [
+        78.99,
+        107.07,
+        119.88
+      ],
+      "mean_luma": 102.03
+    },
+    "black_king": {
+      "square": "g8",
+      "file": "black_king.npz",
+      "occupancy": 0.4623324150596878,
+      "mean_rgb": [
+        71.48,
+        97.98,
+        110.55
+      ],
+      "mean_luma": 93.25
+    }
+  }
+}
