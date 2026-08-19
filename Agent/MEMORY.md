@@ -782,6 +782,54 @@ The template's deploy step and `deploy.sh` were deliberately **not** copied — 
 
 Agent files live in `Agent/` (capitalised). The template used lowercase `agent/`; macOS is case-insensitive so both resolve, but all copied references were rewritten to `Agent/` so the repo does not break on a case-sensitive filesystem.
 
+## Extraction: what actually works (2026-08-19)
+
+The 36-move chain recorded in this file is **built on a misclassified piece.**
+
+At t=13.27s the observed board is `r1b1r1k1/pp3ppp/8/3rP3/4n3/1BB5/PPP2PPP/2KR3R`.
+Black there has **3 rooks and 0 queens**, with no promoted pawn. The piece on d5
+is Black's queen, read as a rook. The real sequence is white Qxd5, black
+recaptures Qxd5, then white Bxd5 — not the recorded `Bxd5` onto a rook.
+
+Every legality check passed. The position is legal, each move is legal, and the
+game is still not the one that was played. **Legality alone cannot detect a
+misread piece.**
+
+### The method that does work
+
+```text
+1. one ffmpeg pass, cropped board, fixed rate   ~30x faster than a spawn per sample
+2. dense sampling (30fps in fast sections)      coarse sampling drops moves entirely
+3. per-square majority vote over ~7 frames      kills one-frame misreads and transients
+4. material sanity per position                 9 pawns, pawn on back rank, impossible counts
+5. material sanity per TRANSITION               catches queen-read-as-rook; position-level cannot
+6. overlapping chunks + seam agreement          catches discontinuity between windows
+7. shortest legal path between states           ambiguity reported, never silently resolved
+```
+
+Result on the prototype recording, full 41.4s at 30fps: **96 stable states,
+0 impossible positions, 4 impossible transitions out of 95** — at 3.00s, 13.27s,
+16.73s and 17.10s. All four are the same failure mode: a piece gains a type
+without a pawn being spent.
+
+Important limitation found: **seam verification catches discontinuity, not
+omission.** All 4 chunk seams verified while moves were still missing inside the
+chunks. A passing seam is not a complete chunk.
+
+Tempo matters: this recording has slow opening play and a fast middle. 10fps
+resolves the opening and drops moves after ~6.5s; 30fps resolves both. One
+sampling rate does not fit a whole recording.
+
+Workers:
+
+```text
+src/workers/dense_board_track.py      single-pass decode + per-square smoothing
+src/workers/chunked_extract.py        overlapping chunks with seam agreement + retry ladder
+src/workers/reconstruct_from_states.py  shortest legal path, transients skipped, ambiguity reported
+src/workers/scan_time_window.py       arbitrary-window scan (superseded by dense_board_track)
+src/validators/material_sanity.py     position and transition material checks
+```
+
 ## Current falsification rules
 
 1. Any new visual method must pass the Bridge 10 control before being trusted on Bridges 16–19. **Constrained Gemini passed on 2026-08-19 (one trial).**
