@@ -140,6 +140,34 @@ Full phased plan: `docs/PLAN.md`.
 - [ ] **Runtime is 10.2s, not ~35s.** `step_s` is a fixed 0.95s per ply. Length
   should follow narration (`docs/PLAN.md` 1.6), so this closes when voice lands,
   not by padding the constant.
+
+- [ ] **Custom board and piece art — waiting on the owner.** The owner is
+  generating a board and a piece set. `docs/ASSET_PROMPTS.md` holds both prompts
+  with the exact geometry and the failure modes each instruction prevents.
+
+  Layout decision taken to make room for the mascot: **Option A**, a dedicated
+  band. Board shrinks 820 -> **720x720 (90px squares)** at y=330, freeing
+  **880x354 at y=1146-1500** for the mascot, which rises from below and never
+  occludes the board. Measured against the live scene, not estimated — the
+  largest contiguous gap in the current layout is 206px and a pawn needs ~330px,
+  so the board had to give. Rejected: edge-overlap entry (hides pieces exactly
+  when the viewer is studying the position) and a 780px hybrid (compromises
+  both).
+
+  Not yet applied to `scene.html` — the layout change lands together with the
+  art, so the two are verified in one render rather than two.
+
+  Acceptance checks before anything is committed: squares on exact 90px
+  boundaries; piece heights in the stated order on one shared baseline; each
+  piece legible as a silhouette at 90px; no halo after background removal; and
+  the traced SVG must be real vector geometry, not a raster `<image>` wrapped in
+  an `<svg>` tag, which is what auto-trace usually produces. The existing vector
+  glyph set stays in the tree as the fallback.
+
+  Licence gate, already cleared in principle: chess pieces are public-domain
+  Staunton, so AI generation is fine — but Canva's own stock elements may not be
+  used, and a set that recognisably reproduces Duolingo's or Chess.com's artwork
+  is blocked under Non-negotiable 7.
 - [ ] **Pawn mascot popups** — `design.md` has the full spec, three per short,
   occlusion of the discussed squares is a hard validator failure.
 - [ ] **Voice and burned captions**, then a ~35s runtime instead of 12s.
@@ -492,7 +520,34 @@ If it passes, apply the same method to Bridges 16–19. If it fails, abandon Gem
 - [x] Reviewed `wink-wink-wink555/blind_navigation` for deterministic CV → LLM architecture.
 - [x] Incorporated MCP / skills / evaluator / approval principles from `AI_Agent_Systems_Complete_Guide.md` into the project plan.
 
-## Last session summary
+## Last session summary — 2026-08-20
+
+Extraction was not solved. The prototype recording is Duolingo's "Review your
+game" screen for its whole 41.4s, and the review steps backwards to demonstrate
+better moves; the reconstructor assumed states only advance and bridged each
+rewind with invented plies. Eight of the 96 plies never happened, one of them a
+position with a black king standing in check, and two of the three "ambiguous
+bridges" were asking which rook moved in a line nobody played.
+
+`src/validators/review_rewind.py` separates the replayed game from the
+demonstrations. The real game is 88 plies, contract-clean, emitted as
+`tests/fixtures/full_game_moves.json`. The third bridge was genuine and was
+settled by reading the frames: `fxe5 Rdxe5 Rxe5 Rxe5`, which is *not* the
+first-listed candidate a default would have taken.
+
+Stockfish depth 20 over all 88 plies puts the owner's worst moment at ply 56
+`Kg6`, a blunder at -35.04%, best move `Ke6` — the exact move the app's coach was
+demonstrating at t=22.4s. Two independent sources, same answer, and the rewind
+detector found it from board-state repeats alone.
+
+Also: the human confirmation CLI (refuses rather than guesses), the moment
+selector (owner's plies only, never the biggest number on the board), the piece
+glyphs redrawn, and three bugs of one class — the validator ignored castling
+rights, the analyser fed Stockfish positions with castling stripped, and
+`start_board` ignored the recorded en-passant square. 87 tests plus 4 renderer
+tests, all green.
+
+## Previous session summary
 
 2026-08-19 — Replaced the blocked human mascot with an original **pawn**, drawn as renderer vector shapes: no illustrator, no image generation, no matting, no licence question, and no possibility of being a derivative of someone else's character. All ten expression states, the in-frame popup and the promotion sequence were prototyped and verified. Board pieces switched to original vector glyphs for the same reason, which also removes the piece-art licence hunt from Phase 0.
 
