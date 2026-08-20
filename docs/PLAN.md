@@ -7,28 +7,29 @@
 
 ## Where the project actually stands
 
+> Updated 2026-08-19 after the extraction work. Verify against the repo before
+> trusting any row — this table has been stale before.
+
 | Layer | State |
 |---|---|
 | Board calibration, crop, evidence extraction | working |
-| 64-square perception → piece-placement FEN | working |
-| Temporal state sequence extraction | working |
-| Legal bridge reconstruction (`python-chess`) | working |
-| Ambiguity audit | working — 14 unique, 5 ambiguous |
-| Local visual disambiguation | working — Bridge 10 resolved |
-| Constrained VLM evidence comparison | control passed once; needs repeat + shuffle validation |
-| Provider fallback client | working |
-| **`moves.json` contract** | **does not exist** |
-| **Stockfish analysis** | **not installed** |
-| **Moment selection** | **does not exist** |
-| **Renderer** | **does not exist** |
-| **Script, voice, captions** | **does not exist** |
-| **Validators, approval, publishing, analytics** | **do not exist** |
+| Dense per-square tracking + temporal smoothing | working — `src/workers/dense_board_track.py` |
+| Material sanity (position + transition) | working — `src/validators/material_sanity.py` |
+| Misread repair + transient dropping | working — `src/validators/constrained_reclassify.py` |
+| Difference-guided bridge search | working — `src/perception/bridge_search.py` |
+| **End-to-end extraction** | **working — full 96-ply game, `complete=True`** |
+| `moves.json` contract + validator | working — 6 hard-fail rules, `src/validators/moves_contract.py` |
+| Stockfish analysis | working — Stockfish 18, depth 20, `src/analysis/` |
+| Moment selection | partial — owner's worst moment only |
+| Renderer | working — 1080×1920, board + eval bar + captions |
+| Mascot, script, voice, burned captions | not built |
+| Approval, publishing, analytics | not built — `src/approval/`, `src/publishers/`, `src/database/` are empty |
 
-10,233 lines of Python exist. All of it is the truth layer. Nothing the audience
-would ever see has been built. The plan below deliberately inverts that.
+Two shorts have been rendered from real verified moves. The extraction layer is
+no longer the blocker; presentation quality is.
 
-`src/agents/`, `src/approval/`, `src/database/`, `src/publishers/` and
-`src/validators/` are empty directories.
+Known gaps: three ambiguous bridges need human confirmation, the renderer's
+piece glyphs are crude, there is no mascot, and no video has voice or captions.
 
 ## Sequencing principle
 

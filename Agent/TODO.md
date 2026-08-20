@@ -5,22 +5,34 @@
 
 ## Current milestone
 
-**Milestone: produce one postable short from the existing recording, by hand.**
+**Milestone: confirm the three ambiguous bridges, then make the video look good.**
 
-The truth layer is ~70% built and accounts for all 10,233 lines of code so far. Nothing the audience would see exists. This milestone inverts that.
+Extraction is solved. `src/workers/extract_game.py` reconstructs the complete
+96-ply game from the recording with `complete=True`, 0 impossible positions and
+0 impossible transitions. Two shorts have been rendered from verified moves.
 
-The blocker changed on 2026-08-19. Bridges 16-19 are no longer a research problem: they are resolved by the owner confirming the move list, and they sit in a drawn endgame shuffle a 35-second short cuts anyway.
+The blocker is no longer truth. It is presentation: crude piece glyphs, no
+mascot, no voice, no captions — and three bridges the board genuinely cannot
+disambiguate.
 
-Full phased plan: `docs/PLAN.md`. Review it before starting implementation.
+Full phased plan: `docs/PLAN.md`.
 
-## Current — Phase 0 prerequisites
+## Current — next three tasks, in order
 
-- [x] Install Stockfish — **Stockfish 18** at `/opt/homebrew/bin/stockfish`, responds to `uci`.
+- [ ] **Human confirmation CLI.** Three ambiguous bridges need the owner to pick, and nothing should reach the renderer until they do. Show each candidate line with its timestamp, accept a choice, write `verification_status: human_confirmed` and `verification_basis: ["human_confirmed"]` into `moves.json`. Candidates are in `logs/extracted_game.json` under `reconstruction.ambiguous_bridges`:
+  - `t=16.73` — `Rxe5 Rdxe5 fxe5 Rxe5` / `Rxe5 Rexe5 fxe5 Rxe5` / `fxe5 …` (which rook)
+  - `t=21.83` — `Re5 Kf7 Rf5+` / `Rd5 Kf7 Rf5+`
+  - `t=24.80` — `Re5+ Kf7 Rf5+ Kg6` / `Rd5 Kf7 Rf5+ Kg6`
+- [ ] **Emit the full game as `moves.json`** once confirmed, and run it through `validate_moves` + Stockfish. This replaces `tests/fixtures/prototype_moves.json`, whose 36-ply chain is built on the misread queen and should be regenerated or clearly marked superseded.
+- [ ] **Redraw the piece glyphs.** The owner's words: "lot of quality issues... pieces need to be more good looking". Current shapes are crude and were the first thing criticised. Spec in `design.md` — cream `#F2EDDF`, navy `#1E2A44`, amber accent, matching outline weight.
 
-- [ ] Choose a commercially-licensed font; embed locally in `assets/renderer/fonts/`.
-- [ ] Draw the pawn mascot as renderer vector shapes — two states first (`intro_peek`, `deflated`) — and prove the popup component in a real 1080×1920 render before drawing the other eight. Spec in `design.md`: cream `#F2EDDF` body, navy `#1E2A44` outline, amber `#E0A33E` accent, slide-in/overshoot/settle/exit timing.
-- [ ] Draw the 12 original vector piece glyphs, matching the mascot's outline weight and palette.
-- [ ] Clear the outstanding Bridge 10 validation debt: repeat the constrained Gemini control 3-5 times and once with shuffled/reversed frame order. Not a Phase 1 blocker, since Phase 1 uses human confirmation.
+Then: pawn mascot popups (`design.md` has the full spec), voice, burned captions,
+and a ~35s runtime instead of 12s.
+
+## Deferred — Phase 0 leftovers
+
+- [ ] Choose a commercially-licensed font; embed in `assets/renderer/fonts/`. Inter (SIL OFL 1.1) was the recommendation.
+- [ ] Clear the Bridge 10 Gemini validation debt: repeat the control 3-5 times and once with shuffled frame order. Lower priority now — extraction no longer depends on the VLM at all.
 
 ## Open — repository and licensing
 
