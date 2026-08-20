@@ -149,7 +149,7 @@ def mascot_sprites(mascot_dir=None):
     mascot_dir = Path(mascot_dir or MASCOTS)
     states = {}
     for expression in ("confident", "regretful"):
-        uri = data_uri(mascot_dir / f"teen_{expression}.png")
+        uri = data_uri(mascot_dir / f"teen_peek_{expression}.png")
         if uri:
             states[expression] = uri
     return states

@@ -19,7 +19,7 @@ from src.renderer.render_short import (  # noqa: E402
     TEMPLATE, build_scene, mascot_sprites, piece_sprites, warm_up,
 )
 
-SQ = 105  # the board is 840px across, eight squares
+SQ = 135  # exact Duolingo proportion: 1080px board, eight squares
 
 
 def init_page(page, scene):
@@ -46,20 +46,51 @@ def test_social_layout_is_character_board_and_verdict_only():
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": 1080, "height": 1920})
         init_page(page, scene)
-        page.evaluate("n => renderFrame(n)", 110)
+        page.evaluate("n => renderFrame(n)", 105)
         layout = page.evaluate(
             """() => ({
                 board: [document.querySelector('#board').offsetWidth,
                         document.querySelector('#board').offsetHeight],
+                boardLeft: document.querySelector('#board').offsetLeft,
                 verdict: document.querySelector('#verdict')?.textContent.trim().toUpperCase(),
-                removed: ['hook', 'chips', 'evalrow'].every(id => !document.getElementById(id))
+                removed: ['hook', 'chips', 'evalrow', 'coords', 'frame']
+                    .every(id => !document.getElementById(id))
             })"""
         )
         browser.close()
 
-    assert layout["board"] == [840, 840]
+    assert layout["board"] == [1080, 1080]
+    assert layout["boardLeft"] == 0
     assert layout["verdict"] in {"BLUNDER", "MISTAKE", "INACCURACY", "GOOD MOVE", "BEST MOVE"}
     assert layout["removed"] is True
+
+
+def test_verdict_animates_on_landing_then_disappears_before_next_move():
+    scene = build_scene()
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1080, "height": 1920})
+        init_page(page, scene)
+
+        def verdict_at(frame):
+            page.evaluate("n => renderFrame(n)", frame)
+            return page.evaluate(
+                """() => ({text: verdict.textContent.trim(),
+                            transform: verdict.style.transform,
+                            opacity: verdict.style.opacity})"""
+            )
+
+        before = verdict_at(95)
+        landing = verdict_at(105)
+        cleared = verdict_at(150)
+        browser.close()
+
+    assert before["text"] == ""
+    assert landing["text"] == "Good move"
+    assert landing["transform"] not in ("", "none")
+    assert float(landing["opacity"]) > 0
+    assert cleared["text"] == ""
 
 
 def test_renderer_never_alters_the_move_sequence():

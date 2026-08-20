@@ -8,38 +8,31 @@
          font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
          -webkit-font-smoothing:antialiased}
   /* Three surfaces only: character + bubble, complete board, verdict. */
-  #mascot{position:absolute;right:42px;top:32px;width:440px;height:500px;
+  #mascot{position:absolute;left:0;top:20px;width:520px;height:500px;
           background-repeat:no-repeat;background-position:bottom center;
           background-size:contain;will-change:transform;z-index:3}
-  #bubble{position:absolute;left:70px;top:280px;width:500px;min-height:132px;
+  #bubble{position:absolute;left:460px;top:280px;width:550px;min-height:132px;
           background:#1B2027;border:3px solid #E0A33E;border-radius:26px;padding:24px 30px;
           color:#EDF1F6;font-size:34px;font-weight:700;line-height:1.25;
           box-shadow:0 12px 40px rgba(0,0,0,.45);z-index:4;
           will-change:transform,opacity}
-  #bubble:after{content:"";position:absolute;right:-27px;top:46px;
-                border:18px solid transparent;border-left-color:#E0A33E;
-                border-right:0}
+  #bubble:after{content:"";position:absolute;left:-27px;top:46px;
+                border:18px solid transparent;border-right-color:#E0A33E;
+                border-left:0}
 
-  #frame{position:absolute;left:76px;top:530px;width:928px;height:928px;
-         background:#1A1F26;border:2px solid rgba(255,255,255,.07);
-         border-radius:22px;box-shadow:0 18px 60px rgba(0,0,0,.55)}
-  #board{position:absolute;left:120px;top:574px;width:840px;height:840px;
-         border-radius:6px;overflow:hidden}
+  #board{position:absolute;left:0;top:520px;width:1080px;height:1080px;overflow:hidden}
   #squares{position:absolute;inset:0}
   #pieces{position:absolute;inset:0}
-  .sq{position:absolute;width:105px;height:105px}
-  .hl{position:absolute;width:105px;height:105px;background:#E0A33E;opacity:.34}
+  .sq{position:absolute;width:135px;height:135px}
+  .hl{position:absolute;width:135px;height:135px;background:#E0A33E;opacity:.34}
   .hl.bad{background:#C6434A;opacity:.52}
-  .pc{position:absolute;width:105px;height:105px;
+  .pc{position:absolute;width:135px;height:135px;
        background-repeat:no-repeat;background-position:center;background-size:100% 100%}
-  .coord{position:absolute;color:#7C8794;font-size:22px;font-weight:700;
-         text-align:center;line-height:44px;width:44px;height:44px}
-
-  #verdict{position:absolute;left:136px;top:1515px;width:808px;height:150px;
+  #verdict{position:absolute;left:90px;top:1640px;width:900px;height:150px;
            border:3px solid rgba(255,255,255,.10);border-radius:28px;
            background:#1A1F26;color:#E8EDF3;display:flex;align-items:center;
            justify-content:center;font-size:54px;font-weight:900;
-           letter-spacing:2px;text-transform:uppercase}
+           letter-spacing:2px;text-transform:uppercase;will-change:transform,opacity}
   #verdict.bad{background:#431E24;border-color:#A9434E;color:#FFC0C6}
   #verdict.good{background:#173A29;border-color:#3B8B5D;color:#A8F2C1}
   #verdict:empty{opacity:0}
@@ -49,8 +42,6 @@
 <div id="stage">
   <div id="mascot"></div>
   <div id="bubble"></div>
-  <div id="frame"></div>
-  <div id="coords"></div>
   <div id="board"><div id="squares"></div><div id="pieces"></div></div>
   <div id="verdict"></div>
 </div>
@@ -62,7 +53,7 @@ const SCENE = window.__SCENE__ || {};
 const PIECE_ART = window.__PIECE_ART__ || {};
 const MASCOT_ART = window.__MASCOT_ART__ || {};
 const CUES = SCENE.cues || [];
-const SQ = 105;
+const SQ = 135;
 const CREAM = "#F2EDDF", NAVY = "#1E2A44";
 
 // --- original vector piece glyphs -------------------------------------------
@@ -194,24 +185,6 @@ const QUALITY_LABELS = {
 };
 const BAD_LABELS = {blunder:true, mistake:true, inaccuracy:true};
 
-function drawCoords(){
-  // Files and ranks follow the flip, so a board shown from the owner's side is
-  // labelled from the owner's side. Baked-in labels on the board art would be
-  // upside-down half the time; these are drawn.
-  const files = "abcdefgh".split(""), ranks = [8,7,6,5,4,3,2,1];
-  const F = SCENE.flip ? files.slice().reverse() : files;
-  const R = SCENE.flip ? ranks.slice().reverse() : ranks;
-  let h = "";
-  for (let i = 0; i < 8; i++){
-    const x = 120 + i * SQ + SQ/2 - 22, y = 574 + i * SQ + SQ/2 - 22;
-    h += '<div class="coord" style="left:'+x+'px;top:532px">'+F[i]+'</div>';
-    h += '<div class="coord" style="left:'+x+'px;top:1416px">'+F[i]+'</div>';
-    h += '<div class="coord" style="left:80px;top:'+y+'px">'+R[i]+'</div>';
-    h += '<div class="coord" style="left:960px;top:'+y+'px">'+R[i]+'</div>';
-  }
-  document.getElementById("coords").innerHTML = h;
-}
-
 function drawSquares(){
   let h = "";
   for (let r = 0; r < 8; r++)
@@ -283,9 +256,23 @@ function renderFrame(n){
 
   // One verdict only below board. No competing move, piece, or evaluation UI.
   const verdict = document.getElementById("verdict");
-  const verdictReady = started && local >= 1 && QUALITY_LABELS[mv.label];
+  const moveElapsed = started ? (t - hookEnd) - idx * step : -1;
+  const verdictAge = moveElapsed - slide;
+  const verdictReady = verdictAge >= 0 && verdictAge <= 1.10 && QUALITY_LABELS[mv.label];
   verdict.textContent = verdictReady ? QUALITY_LABELS[mv.label] : "";
   verdict.className = verdictReady ? (BAD_LABELS[mv.label] ? "bad" : "good") : "";
+  if (verdictReady) {
+    const progress = Math.min(1, verdictAge / 1.10);
+    const pop = 0.76 + 0.24 * backOut(Math.min(1, verdictAge / 0.34));
+    const shake = BAD_LABELS[mv.label]
+      ? Math.sin(verdictAge * 72) * 15 * Math.max(0, 1 - verdictAge / 0.48)
+      : 0;
+    verdict.style.transform = "translateX("+shake.toFixed(2)+"px) scale("+pop.toFixed(3)+")";
+    verdict.style.opacity = (progress > 0.82 ? (1 - progress) / 0.18 : 1).toFixed(3);
+  } else {
+    verdict.style.transform = "scale(.76)";
+    verdict.style.opacity = "0";
+  }
 
   // mascot and its bubble. The bubble is the mascot's only text surface and it
   // appears and leaves with it — never a second caption competing with the hook.
@@ -296,10 +283,10 @@ function renderFrame(n){
   if (cue && art) {
     const off = mascotOffset(cue, n);
     mascot.style.backgroundImage = "url(" + art + ")";
-    mascot.style.transform = "translateX(" + off.toFixed(2) + "px)";
+    mascot.style.transform = "translateX(" + (-off).toFixed(2) + "px)";
     bubble.textContent = cue.text;
     bubble.style.opacity = Math.max(0, 1 - off / 160).toFixed(3);
-    bubble.style.transform = "translateX(" + (off * 0.45).toFixed(2) + "px)";
+    bubble.style.transform = "translateX(" + (-off * 0.45).toFixed(2) + "px)";
   } else {
     mascot.style.backgroundImage = "none";
     bubble.textContent = "";
@@ -307,7 +294,6 @@ function renderFrame(n){
   }
 }
 
-drawCoords();
 drawSquares();
 window.renderFrame = renderFrame;
 renderFrame(0);
