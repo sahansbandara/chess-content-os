@@ -47,23 +47,80 @@ const CREAM = "#F2EDDF", NAVY = "#1E2A44";
 
 // --- original vector piece glyphs -------------------------------------------
 // Drawn here rather than shipped as art: nothing to license, nothing to attribute.
+//
+// Every piece is built from primitives that share one baseline (y=88) and one
+// foot, so the set reads as a family. Height carries the hierarchy — pawn
+// shortest, king tallest — because at 100px on a phone the silhouette is all a
+// viewer gets; interior detail is invisible.
+//
+// The parts overlap on purpose. pieceSVG paints the outline pass first and the
+// fill pass over it, so the seams between parts disappear and each piece ends up
+// with a single clean contour instead of a stack of outlined blobs.
+const FOOT = '<path d="M22 89 h56 a3 3 0 0 0 3 -3 v-1 l-8 -8 h-46 l-8 8 v1 a3 3 0 0 0 3 3 z"/>';
+
 const GLYPH = {
-  // Silhouettes deliberately differ in OUTLINE and HEIGHT, not just detail —
-  // at 100px a chess piece has to be identifiable in one glance.
-  p:'<circle cx="50" cy="50" r="11"/><path d="M35 84 q3 -16 15 -23 q12 7 15 23 z"/>',
-  r:'<path d="M29 84 v-27 h-4 v-17 h9 v7 h6 v-7 h12 v7 h6 v-7 h9 v17 h-4 v27 z"/>',
-  n:'<path d="M33 84 q-2 -21 11 -31 q-5 -7 -1 -13 q5 5 9 1 q4 -8 9 -5 q15 5 17 22 q2 15 1 26 z"/>',
-  b:'<circle cx="50" cy="27" r="6"/><path d="M33 84 q0 -20 13 -30 q-7 -9 4 -15 q11 6 4 15 q13 10 13 30 z"/>',
-  q:'<circle cx="50" cy="15" r="5"/><path d="M30 84 q-2 -23 9 -31 l-9 -21 l13 11 l7 -17 l7 17 l13 -11 l-9 21 q11 8 9 31 z"/>',
-  k:'<path d="M46 8 h8 v7 h7 v8 h-7 v7 h-8 v-7 h-7 v-8 h7 z"/><path d="M31 84 q-2 -23 9 -31 q-11 -9 3 -14 h14 q14 5 3 14 q11 8 9 31 z"/>'
+  p: FOOT
+   + '<path d="M33 79 q0 -17 17 -24 q17 7 17 24 z"/>'
+   + '<rect x="30" y="74" width="40" height="9" rx="4"/>'
+   + '<path d="M43 58 q7 -6 14 0 z"/>'
+   + '<rect x="44" y="44" width="12" height="14" rx="5"/>'
+   + '<circle cx="50" cy="36" r="12"/>',
+
+  r: FOOT
+   + '<path d="M31 80 l4 -29 h30 l4 29 z"/>'
+   + '<rect x="27" y="44" width="46" height="10" rx="3"/>'
+   + '<path d="M28 48 v-22 h11 v9 h7 v-9 h8 v9 h7 v-9 h11 v22 z"/>',
+
+  n: FOOT
+   + '<rect x="27" y="73" width="46" height="10" rx="4"/>'
+   + '<path d="M40 74 c-2 -14 2 -22 8 -28 l-9 4 c-6 3 -12 2 -13 -3 '
+   + 'c-1 -6 6 -13 13 -18 c3 -6 9 -11 17 -12 c9 -1 15 6 16 16 '
+   + 'c1 12 -3 26 -6 41 z"/>',
+
+  b: FOOT
+   + '<path d="M35 79 q-1 -14 15 -20 q16 6 15 20 z"/>'
+   + '<rect x="30" y="73" width="40" height="10" rx="4"/>'
+   + '<path d="M41 61 c-7 -15 -1 -28 9 -37 c10 9 16 22 9 37 z"/>'
+   + '<circle cx="50" cy="21" r="5"/>',
+
+  q: FOOT
+   + '<path d="M30 80 q-3 -20 9 -28 h22 q12 8 9 28 z"/>'
+   + '<rect x="28" y="50" width="44" height="10" rx="4"/>'
+   + '<path d="M36 54 l-5 -21 l12 10 l7 -19 l7 19 l12 -10 l-5 21 z"/>'
+   + '<circle cx="31" cy="31" r="5"/><circle cx="69" cy="31" r="5"/>'
+   + '<circle cx="50" cy="20" r="6"/>',
+
+  k: FOOT
+   + '<path d="M30 80 q-3 -20 10 -28 h20 q13 8 10 28 z"/>'
+   + '<rect x="28" y="50" width="44" height="10" rx="4"/>'
+   + '<path d="M37 54 q-5 -16 13 -20 q18 4 13 20 z"/>'
+   + '<rect x="45" y="10" width="10" height="26" rx="3"/>'
+   + '<rect x="37" y="18" width="26" height="10" rx="3"/>'
+};
+
+// The knight needs one interior mark: without an eye it reads as a fin.
+// Interior marks, painted last in the outline colour. Only where a silhouette
+// alone is ambiguous: the knight reads as a fin without an eye, and the bishop
+// reads as a tall pawn without its mitre slit.
+const DETAIL = {
+  n: '<circle cx="58" cy="35" r="3"/>',
+  b: '<path d="M55 32 l-10 14" fill="none" stroke-width="5"/>'
 };
 
 function pieceSVG(sym){
   const white = sym === sym.toUpperCase();
+  const body = white ? CREAM : NAVY;
+  const line = white ? NAVY : CREAM;
   const d = GLYPH[sym.toLowerCase()];
+  const detail = DETAIL[sym.toLowerCase()] || "";
+  // Outline pass under fill pass: the fills hide every seam where the primitives
+  // overlap, leaving one contour around the whole piece.
   return '<svg viewBox="0 0 100 100" width="'+SQ+'" height="'+SQ+'">'
-       + '<g fill="'+(white?CREAM:NAVY)+'" stroke="'+(white?NAVY:CREAM)+'" stroke-width="4" stroke-linejoin="round">'
-       + d + '</g></svg>';
+       + '<g stroke="'+line+'" stroke-width="7" fill="none" '
+       + 'stroke-linejoin="round" stroke-linecap="round">' + d + '</g>'
+       + '<g data-body="1" fill="'+body+'" stroke="none">' + d + '</g>'
+       + '<g fill="'+line+'" stroke="'+line+'" stroke-linecap="round">' + detail + '</g>'
+       + '</svg>';
 }
 
 // Orientation follows the owner's side, so the video shows the game as they saw it.

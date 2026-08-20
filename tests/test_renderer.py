@@ -59,7 +59,7 @@ def test_board_matches_python_chess_at_the_starting_position():
         rendered = page.evaluate(
             """() => [...document.querySelectorAll('#pieces .pc')].map(d => ({
                 left: parseFloat(d.style.left), top: parseFloat(d.style.top),
-                fill: d.querySelector('g').getAttribute('fill')}))"""
+                fill: d.querySelector('g[data-body]').getAttribute('fill')}))"""
         )
         browser.close()
 
