@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="360" viewBox="0 0 1080 360" role="img" aria-labelledby="title desc">
+  <title id="title">Chess piece sprite sheet and symbol library</title>
+  <desc id="desc">Twelve flat vector chess pieces in a 6 by 2 grid. Top row white pieces, bottom row black pieces. Each symbol is scaled about the shared baseline at y=160 so the set carries a readable height hierarchy at 90px: king tallest, pawn shortest.</desc>
+  <defs>
+    <style>
+      .pc-white { fill: #F2EDDF; stroke: #1E2A44; }
+      .pc-black { fill: #1E2A44; stroke: #F2EDDF; }
+      .pc-piece { stroke-width: 8; stroke-linejoin: round; stroke-linecap: round; }
+    </style>
+
+    <symbol id="white-king" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(1.1829) translate(-90,-160)">
+      <g class="pc-piece pc-white">
+        <path d="M80 20h20v16h16v16h-16v16H80V52H64V36h16z"/>
+        <path d="M66 74h48l-6 18c20 9 30 22 30 40H42c0-18 10-31 30-40z"/>
+        <path d="M54 132h72v12H54z"/>
+        <path d="M48 144h84v16H48z"/>
+      </g>
+      </g>
+    </symbol>
+
+    <symbol id="white-queen" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(1.1217) translate(-90,-160)">
+      <g class="pc-piece pc-white">
+        <circle cx="50" cy="42" r="8"/>
+        <circle cx="76" cy="30" r="8"/>
+        <circle cx="104" cy="30" r="8"/>
+        <circle cx="130" cy="42" r="8"/>
+        <path d="M54 54l12 28 18-22 6 26 6-26 18 22 12-28 8 48H46z"/>
+        <path d="M56 132h68v12H56z"/>
+        <path d="M48 144h84v16H48z"/>
+      </g>
+      </g>
+    </symbol>
+
+    <symbol id="white-rook" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(0.9545) translate(-90,-160)">
+      <g class="pc-piece pc-white">
+        <path d="M54 28h16v20H54z"/>
+        <path d="M82 28h16v20H82z"/>
+        <path d="M110 28h16v20h-16z"/>
+        <path d="M56 48h68v18l-8 14H64l-8-14z"/>
+        <path d="M68 80h44v52H68z"/>
+        <path d="M58 132h64v12H58z"/>
+        <path d="M48 144h84v16H48z"/>
+      </g>
+      </g>
+    </symbol>
+
+    <symbol id="white-bishop" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(1.0478) translate(-90,-160)">
+      <g class="pc-piece pc-white">
+        <path d="M90 26c12 0 20 9 20 20 0 8-4 13-9 18l-3 3c13 8 24 20 24 39H58c0-19 11-31 24-39l-3-3c-5-5-9-10-9-18 0-11 8-20 20-20z"/>
+        <path d="M84 40l12 22"/>
+        <path d="M58 106h64v12H58z"/>
+        <path d="M52 118h76v14H52z"/>
+        <path d="M46 144h88v16H46z"/>
+      </g>
+      </g>
+    </symbol>
+
+    <symbol id="white-knight" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(1.0364) translate(-90,-160)">
+      <g class="pc-piece pc-white">
+        <path d="M118 44c-10-11-24-16-42-16-14 0-24 6-30 18 17 1 31 9 41 21-19 5-33 19-39 41h18v24h52v-18c9-4 14-12 16-24 3-17-1-33-16-46z"/>
+        <circle cx="90" cy="52" r="3" fill="#1E2A44" stroke="none"/>
+        <path d="M84 66c6 2 12 2 18 0"/>
+        <path d="M56 132h72v12H56z"/>
+        <path d="M48 144h84v16H48z"/>
+      </g>
+      </g>
+    </symbol>
+
+    <symbol id="white-pawn" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(0.8182) translate(-90,-160)">
+      <g class="pc-piece pc-white">
+        <circle cx="90" cy="46" r="18"/>
+        <path d="M74 70h32c14 12 20 24 20 40H54c0-16 6-28 20-40z"/>
+        <path d="M58 110h64v12H58z"/>
+        <path d="M50 144h80v16H50z"/>
+      </g>
+      </g>
+    </symbol>
+
+    <symbol id="black-king" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(1.1829) translate(-90,-160)">
+      <g class="pc-piece pc-black">
+        <path d="M80 20h20v16h16v16h-16v16H80V52H64V36h16z"/>
+        <path d="M66 74h48l-6 18c20 9 30 22 30 40H42c0-18 10-31 30-40z"/>
+        <path d="M54 132h72v12H54z"/>
+        <path d="M48 144h84v16H48z"/>
+      </g>
+      </g>
+    </symbol>
+
+    <symbol id="black-queen" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(1.1217) translate(-90,-160)">
+      <g class="pc-piece pc-black">
+        <circle cx="50" cy="42" r="8"/>
+        <circle cx="76" cy="30" r="8"/>
+        <circle cx="104" cy="30" r="8"/>
+        <circle cx="130" cy="42" r="8"/>
+        <path d="M54 54l12 28 18-22 6 26 6-26 18 22 12-28 8 48H46z"/>
+        <path d="M56 132h68v12H56z"/>
+        <path d="M48 144h84v16H48z"/>
+      </g>
+      </g>
+    </symbol>
+
+    <symbol id="black-rook" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(0.9545) translate(-90,-160)">
+      <g class="pc-piece pc-black">
+        <path d="M54 28h16v20H54z"/>
+        <path d="M82 28h16v20H82z"/>
+        <path d="M110 28h16v20h-16z"/>
+        <path d="M56 48h68v18l-8 14H64l-8-14z"/>
+        <path d="M68 80h44v52H68z"/>
+        <path d="M58 132h64v12H58z"/>
+        <path d="M48 144h84v16H48z"/>
+      </g>
+      </g>
+    </symbol>
+
+    <symbol id="black-bishop" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(1.0478) translate(-90,-160)">
+      <g class="pc-piece pc-black">
+        <path d="M90 26c12 0 20 9 20 20 0 8-4 13-9 18l-3 3c13 8 24 20 24 39H58c0-19 11-31 24-39l-3-3c-5-5-9-10-9-18 0-11 8-20 20-20z"/>
+        <path d="M84 40l12 22"/>
+        <path d="M58 106h64v12H58z"/>
+        <path d="M52 118h76v14H52z"/>
+        <path d="M46 144h88v16H46z"/>
+      </g>
+      </g>
+    </symbol>
+
+    <symbol id="black-knight" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(1.0364) translate(-90,-160)">
+      <g class="pc-piece pc-black">
+        <path d="M118 44c-10-11-24-16-42-16-14 0-24 6-30 18 17 1 31 9 41 21-19 5-33 19-39 41h18v24h52v-18c9-4 14-12 16-24 3-17-1-33-16-46z"/>
+        <circle cx="90" cy="52" r="3" fill="#F2EDDF" stroke="none"/>
+        <path d="M84 66c6 2 12 2 18 0"/>
+        <path d="M56 132h72v12H56z"/>
+        <path d="M48 144h84v16H48z"/>
+      </g>
+      </g>
+    </symbol>
+
+    <symbol id="black-pawn" viewBox="0 0 180 180">
+      <g transform="translate(90,160) scale(0.8182) translate(-90,-160)">
+      <g class="pc-piece pc-black">
+        <circle cx="90" cy="46" r="18"/>
+        <path d="M74 70h32c14 12 20 24 20 40H54c0-16 6-28 20-40z"/>
+        <path d="M58 110h64v12H58z"/>
+        <path d="M50 144h80v16H50z"/>
+      </g>
+      </g>
+    </symbol>
+  </defs>
+
+  <g aria-hidden="true">
+    <use href="#white-king" x="0" y="0" width="180" height="180"/>
+    <use href="#white-queen" x="180" y="0" width="180" height="180"/>
+    <use href="#white-rook" x="360" y="0" width="180" height="180"/>
+    <use href="#white-bishop" x="540" y="0" width="180" height="180"/>
+    <use href="#white-knight" x="720" y="0" width="180" height="180"/>
+    <use href="#white-pawn" x="900" y="0" width="180" height="180"/>
+
+    <use href="#black-king" x="0" y="180" width="180" height="180"/>
+    <use href="#black-queen" x="180" y="180" width="180" height="180"/>
+    <use href="#black-rook" x="360" y="180" width="180" height="180"/>
+    <use href="#black-bishop" x="540" y="180" width="180" height="180"/>
+    <use href="#black-knight" x="720" y="180" width="180" height="180"/>
+    <use href="#black-pawn" x="900" y="180" width="180" height="180"/>
+  </g>
+</svg>

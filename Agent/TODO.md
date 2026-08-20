@@ -141,36 +141,72 @@ Full phased plan: `docs/PLAN.md`.
   should follow narration (`docs/PLAN.md` 1.6), so this closes when voice lands,
   not by padding the constant.
 
-- [ ] **Custom board and piece art — waiting on the owner.** The owner is
-  generating a board and a piece set. `docs/ASSET_PROMPTS.md` holds both prompts
-  with the exact geometry and the failure modes each instruction prevents.
+- [ ] **Custom board and piece art — in flight.** `docs/ASSET_PROMPTS.md` holds
+  both prompts, the exact geometry, and the failure mode each instruction exists
+  to prevent.
 
-  Layout decision taken to make room for the mascot: **Option A**, a dedicated
+  **Board: accepted.** `assets/renderer/board/board.html` — 720x720, 64 explicit
+  `<rect>`s on exact 90px boundaries, ids `a1`-`h8`, a1 dark and bottom-left, no
+  border, no coordinate labels, no gradients, real geometry. Nothing to fix.
+
+  **Piece sheet v1 (SVG): accepted with repairs, now the fallback.**
+  `assets/renderer/pieces/chess_pieces.svg`. Measured on arrival: baselines
+  perfect (all twelve on y=160) and white/black identical, but the height
+  hierarchy was flat — king 140px, pawn 132px, an 8px spread across the whole
+  set, so a pawn stood 94% as tall as a king. Second defect,
+  `vector-effect: non-scaling-stroke`, pinned the outline at 8 device px so at
+  90px it rendered double weight and crushed the interior detail.
+
+  Three repairs baked into the file: non-scaling-stroke removed; every symbol
+  scaled about the shared baseline to the specified heights (king 165.6px / 92%
+  down to pawn 108px / 60%, order king > queen > bishop > knight > rook > pawn);
+  and the CSS classes renamed `.w`/`.b`/`.piece` -> `.pc-white`/`.pc-black`/
+  `.pc-piece`, because an injected SVG's `<style>` becomes global document CSS
+  and `.b` is far too generic to leave loose in the scene.
+
+  Remaining known defect, not fixed: the knight reads as a bird rather than a
+  horse, and the black queen's crown teeth are thin enough that the cream
+  outline swallows the navy fill at 90px.
+
+  **Piece sheet v2 (raster): the owner's preferred set, blocked on the file.**
+  A Staunton-style illustrated set with a real horse-head knight and a correct
+  height hierarchy. It exists only as a chat paste — it must be saved to
+  `assets/renderer/pieces/pieces_source.png` before anything can happen.
+  Pipeline once it lands: slice into 12, key the background and check for halos
+  on both light and dark squares, normalise to one baseline and the height
+  hierarchy, export at 180px, embed as data URIs injected through
+  `add_init_script` (no file:// loading, no network, determinism preserved).
+  Two open questions: its provenance, and whether the background is flat white
+  or carries a gradient — the white pieces are cream on near-white, so keying is
+  the risky step.
+
+  **Renderer wiring: designed, not yet applied.** Inject the sprite via
+  `add_init_script` alongside `window.__SCENE__`, add `PIECE_IDS` and
+  `installPieceSprite()` to `scene.html`, and swap `pieceSVG()` to emit a
+  `<use>`. Keep `GLYPH`/`FOOT`/`DETAIL` as the fallback. Note before starting:
+  `tests/test_renderer.py` identifies piece colour through `g[data-body]`, which
+  `<use>` does not produce, so that hook has to change with it.
+
+  **Layout decision taken to make room for the mascot: Option A**, a dedicated
   band. Board shrinks 820 -> **720x720 (90px squares)** at y=330, freeing
   **880x354 at y=1146-1500** for the mascot, which rises from below and never
   occludes the board. Measured against the live scene, not estimated — the
   largest contiguous gap in the current layout is 206px and a pawn needs ~330px,
   so the board had to give. Rejected: edge-overlap entry (hides pieces exactly
   when the viewer is studying the position) and a 780px hybrid (compromises
-  both).
+  both). Not yet applied to `scene.html` — the layout change lands together with
+  the art so the two are verified in one render.
 
-  Not yet applied to `scene.html` — the layout change lands together with the
-  art, so the two are verified in one render rather than two.
+  Acceptance checks before any of it is committed as final: squares on exact
+  90px boundaries; piece heights in the stated order on one shared baseline;
+  each piece legible as a silhouette at 90px; no halo after background removal;
+  and any traced SVG must be real vector geometry, not a raster `<image>`
+  wrapped in an `<svg>` tag.
 
-  Acceptance checks before anything is committed: squares on exact 90px
-  boundaries; piece heights in the stated order on one shared baseline; each
-  piece legible as a silhouette at 90px; no halo after background removal; and
-  the traced SVG must be real vector geometry, not a raster `<image>` wrapped in
-  an `<svg>` tag, which is what auto-trace usually produces. The existing vector
-  glyph set stays in the tree as the fallback.
-
-  Licence gate, already cleared in principle: chess pieces are public-domain
-  Staunton, so AI generation is fine — but Canva's own stock elements may not be
-  used, and a set that recognisably reproduces Duolingo's or Chess.com's artwork
-  is blocked under Non-negotiable 7.
-- [ ] **Pawn mascot popups** — `design.md` has the full spec, three per short,
-  occlusion of the discussed squares is a hard validator failure.
-- [ ] **Voice and burned captions**, then a ~35s runtime instead of 12s.
+  Licence gate: chess pieces are public-domain Staunton, so AI generation is
+  fine. Canva's own stock elements may not be used, and a set that recognisably
+  reproduces Duolingo's or Chess.com's artwork is blocked under
+  Non-negotiable 7. The raster set's provenance is still unconfirmed.
 
 The hook writes itself now and it is true: the app told the owner there was a
 better king move, and Stockfish independently names the same move.
