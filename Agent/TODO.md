@@ -19,12 +19,46 @@ Full phased plan: `docs/PLAN.md`.
 
 ## Current — next three tasks, in order
 
-- [ ] **Human confirmation CLI.** Three ambiguous bridges need the owner to pick, and nothing should reach the renderer until they do. Show each candidate line with its timestamp, accept a choice, write `verification_status: human_confirmed` and `verification_basis: ["human_confirmed"]` into `moves.json`. Candidates are in `logs/extracted_game.json` under `reconstruction.ambiguous_bridges`:
-  - `t=16.73` — `Rxe5 Rdxe5 fxe5 Rxe5` / `Rxe5 Rexe5 fxe5 Rxe5` / `fxe5 …` (which rook)
-  - `t=21.83` — `Re5 Kf7 Rf5+` / `Rd5 Kf7 Rf5+`
-  - `t=24.80` — `Re5+ Kf7 Rf5+ Kg6` / `Rd5 Kf7 Rf5+ Kg6`
-- [ ] **Emit the full game as `moves.json`** once confirmed, and run it through `validate_moves` + Stockfish. This replaces `tests/fixtures/prototype_moves.json`, whose 36-ply chain is built on the misread queen and should be regenerated or clearly marked superseded.
-- [ ] **Redraw the piece glyphs.** The owner's words: "lot of quality issues... pieces need to be more good looking". Current shapes are crude and were the first thing criticised. Spec in `design.md` — cream `#F2EDDF`, navy `#1E2A44`, amber accent, matching outline weight.
+- [x] **Human confirmation CLI** — `src/workers/confirm_bridges.py`, 11 tests
+  (`tests/test_confirm_bridges.py`). Shows each candidate line with its
+  timestamp, accepts a choice interactively or via repeatable `--choose T=INDEX`,
+  and writes `verification_status: human_confirmed` /
+  `verification_basis: ["human_confirmed"]` for the plies inside the bridge.
+  It refuses rather than guesses: an unanswered bridge, an out-of-range index,
+  or a chosen line that does not replay to the observed final board all raise
+  instead of writing a file. Candidate #1 never becomes truth by default.
+
+- [ ] **BLOCKED — the recording is a review session, not a game.** Every frame
+  from 0.2s to 40s is Duolingo's *"Review your game"* screen, and the review
+  steps **backwards** to demonstrate better moves. Three observed states repeat
+  an earlier one:
+
+  | first shown | shown again | what it is |
+  |---|---|---|
+  | t=20.300 | t=21.833 | rewind to the position after `Rf5+` |
+  | t=23.733 | t=24.300 | same position, split by transients |
+  | t=20.833 | t=24.800 | rewind back to the real game line |
+
+  The reconstruction assumes states only move forward, so it bridged each rewind
+  by inventing moves. **Plies 57-64 of the 96-ply sequence never happened**:
+  `Re5 Kf7 Rf5+ Ke6 Re5+ Kf7 Rf5+ Kg6` is the review rewinding, showing the
+  coach's suggested `Ke6` ("Next time, there's a better move for that king",
+  t=22.4s, eval label flips `BIG DISADVANTAGE` → `EQUAL CHANCES`), then rewinding
+  again to the move actually played. The real game is **88 plies**: after ply 56
+  (`Kg6`) comes ply 65 (`Rd5`).
+
+  Ambiguous bridges 2 (t=21.83) and 3 (t=24.80) are therefore not ambiguities at
+  all — asking which rook moved is asking about moves nobody played. **Bridge 1
+  (t=16.73) is genuine**: no state repeat, four real recapture orders on e5, and
+  it still needs the owner's answer.
+
+- [ ] **Emit the full game as `moves.json`** — blocked on the above. Cannot ship
+  a 96-ply sequence that contains 8 fabricated plies.
+
+- [ ] **Redraw the piece glyphs.** The owner's words: "lot of quality issues...
+  pieces need to be more good looking". Spec in `design.md` — cream `#F2EDDF`,
+  navy `#1E2A44`, amber accent, matching outline weight. Unblocked by the above;
+  presentation work does not depend on move truth.
 
 Then: pawn mascot popups (`design.md` has the full spec), voice, burned captions,
 and a ~35s runtime instead of 12s.
