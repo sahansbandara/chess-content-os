@@ -141,72 +141,55 @@ Full phased plan: `docs/PLAN.md`.
   should follow narration (`docs/PLAN.md` 1.6), so this closes when voice lands,
   not by padding the constant.
 
-- [ ] **Custom board and piece art — in flight.** `docs/ASSET_PROMPTS.md` holds
-  both prompts, the exact geometry, and the failure mode each instruction exists
-  to prevent.
+- [x] **Custom board and piece art — landed.**
 
-  **Board: accepted.** `src/renderer/board.html` — 720x720, 64 explicit
-  `<rect>`s on exact 90px boundaries, ids `a1`-`h8`, a1 dark and bottom-left, no
-  border, no coordinate labels, no gradients, real geometry. Nothing to fix.
+  **Board:** `src/renderer/board.html`, accepted as sent. 720x720, 64 explicit
+  `<rect>`s on exact 90px boundaries, ids `a1`-`h8`, a1 dark and bottom-left.
 
-  **Piece sheet v1 (SVG): accepted with repairs, now the fallback.**
-  `assets/renderer/pieces/chess_pieces.svg`. Measured on arrival: baselines
-  perfect (all twelve on y=160) and white/black identical, but the height
-  hierarchy was flat — king 140px, pawn 132px, an 8px spread across the whole
-  set, so a pawn stood 94% as tall as a king. Second defect,
-  `vector-effect: non-scaling-stroke`, pinned the outline at 8 device px so at
-  90px it rendered double weight and crushed the interior detail.
+  **Pieces:** owner's AI-generated Staunton set,
+  `assets/renderer/pieces/chess_piece_sprite_sheet.png` (1536x1024 RGBA, real
+  alpha). Licence cleared: Staunton is public domain from 1849 and nothing in it
+  is recognisable as Duolingo's or Chess.com's artwork.
 
-  Three repairs baked into the file: non-scaling-stroke removed; every symbol
-  scaled about the shared baseline to the specified heights (king 165.6px / 92%
-  down to pawn 108px / 60%, order king > queen > bishop > knight > rook > pawn);
-  and the CSS classes renamed `.w`/`.b`/`.piece` -> `.pc-white`/`.pc-black`/
-  `.pc-piece`, because an injected SVG's `<style>` becomes global document CSS
-  and `.b` is far too generic to leave loose in the scene.
+  Measured on arrival: baselines aligned within each row (+-1px) and the
+  hierarchy correct in both rows — but **white and black did not match each
+  other**, worst on the rook at +11.6% (303px white against 338px black). A
+  black rook visibly taller than the white one is the kind of thing viewers
+  notice without being able to name.
 
-  Remaining known defect, not fixed: the knight reads as a bird rather than a
-  horse, and the black queen's crown teeth are thin enough that the cream
-  outline swallows the navy fill at 90px.
+  `src/workers/build_piece_sprites.py` normalises it, 8 tests. Pieces are found
+  by their own alpha rather than by assuming a grid, because the sheet is drawn
+  by an illustrator and the columns are unevenly spaced. Twins are averaged
+  rather than one side copied onto the other — neither half is more correct —
+  and the artist's own hierarchy is preserved instead of being replaced with
+  numbers from a spec, since this set already reads king > queen > bishop >
+  knight > rook > pawn.
 
-  **Piece sheet v2 (raster): the owner's preferred set, blocked on the file.**
-  A Staunton-style illustrated set with a real horse-head knight and a correct
-  height hierarchy. It exists only as a chat paste — it must be saved to
-  `assets/renderer/pieces/pieces_source.png` before anything can happen.
-  Pipeline once it lands: slice into 12, key the background and check for halos
-  on both light and dark squares, normalise to one baseline and the height
-  hierarchy, export at 180px, embed as data URIs injected through
-  `add_init_script` (no file:// loading, no network, determinism preserved).
-  Two open questions: its provenance, and whether the background is flat white
-  or carries a gradient — the white pieces are cream on near-white, so keying is
-  the risky step.
+  One bug worth remembering: sprites were first written as `K.png` / `k.png`,
+  and **macOS is case-insensitive by default**, so every black piece silently
+  overwrote its white twin and the whole board came out black. Filenames are now
+  `wK` / `bK`, and a test asserts the twelve names stay distinct when case is
+  folded.
 
-  **Renderer wiring: designed, not yet applied.** Inject the sprite via
-  `add_init_script` alongside `window.__SCENE__`, add `PIECE_IDS` and
-  `installPieceSprite()` to `scene.html`, and swap `pieceSVG()` to emit a
-  `<use>`. Keep `GLYPH`/`FOOT`/`DETAIL` as the fallback. Note before starting:
-  `tests/test_renderer.py` identifies piece colour through `g[data-body]`, which
-  `<use>` does not produce, so that hook has to change with it.
+  **Wiring:** art is inlined as data URIs and injected through
+  `add_init_script` alongside `window.__SCENE__`. Not referenced by path — the
+  page loads over `file://`, where a relative image request is a separate load
+  the screenshot can race. Missing art is not an error: the scene falls back to
+  its own vector glyphs, which stay in the tree.
 
-  **Layout decision taken to make room for the mascot: Option A**, a dedicated
-  band. Board shrinks 820 -> **720x720 (90px squares)** at y=330, freeing
-  **880x354 at y=1146-1500** for the mascot, which rises from below and never
-  occludes the board. Measured against the live scene, not estimated — the
-  largest contiguous gap in the current layout is 206px and a pawn needs ~330px,
-  so the board had to give. Rejected: edge-overlap entry (hides pieces exactly
-  when the viewer is studying the position) and a 780px hybrid (compromises
-  both). Not yet applied to `scene.html` — the layout change lands together with
-  the art so the two are verified in one render.
+  **Layout Option A applied.** Board 820 -> 720 (90px squares) at y=330, eval bar
+  and text moved to y=1088/1118, freeing **880x354 at y=1146-1500** for the
+  mascot. Verified in a real render, not a mock.
 
-  Acceptance checks before any of it is committed as final: squares on exact
-  90px boundaries; piece heights in the stated order on one shared baseline;
-  each piece legible as a silhouette at 90px; no halo after background removal;
-  and any traced SVG must be real vector geometry, not a raster `<image>`
-  wrapped in an `<svg>` tag.
+  `tests/test_renderer.py` now identifies pieces through `data-piece` rather than
+  by reading paint, since `<img>` backgrounds produce no `<g>`; every page setup
+  in the tests goes through one `init_page` helper so the determinism test
+  exercises the data-URI path too. All four renderer tests green, including
+  byte-identical frames across runs.
 
-  Licence gate: chess pieces are public-domain Staunton, so AI generation is
-  fine. Canva's own stock elements may not be used, and a set that recognisably
-  reproduces Duolingo's or Chess.com's artwork is blocked under
-  Non-negotiable 7. The raster set's provenance is still unconfirmed.
+- [ ] **Mascot art.** The band exists and is empty. `design.md` has the spec:
+  original pawn, max 880x354, transparent, standing pose, feet at the bottom,
+  rises from below the caption band. Same IP test as the pieces.
 
 The hook writes itself now and it is true: the app told the owner there was a
 better king move, and Stockfish independently names the same move.

@@ -10,6 +10,7 @@ so the same inputs always produce the same video.
 Run:  uv run python -m src.renderer.render_short
 """
 
+import base64
 import json
 import subprocess
 from pathlib import Path
@@ -22,6 +23,7 @@ from src.validators.moves_contract import validate_moves
 ROOT = Path(__file__).resolve().parents[2]
 MOVES = ROOT / "tests/fixtures/prototype_moves.json"
 TEMPLATE = ROOT / "src/renderer/scene.html"
+SPRITES = ROOT / "assets/renderer/pieces/sprites"
 
 W, H, FPS = 1080, 1920, 30
 HOOK_S = 1.6      # hold on the starting position before the first move
@@ -97,6 +99,28 @@ def build_scene(moves_path=None, hook=None, opening_caption=None):
     }
 
 
+def piece_sprites(sprite_dir=None):
+    """Load the piece art as data URIs, keyed by the FEN symbol.
+
+    Inlined rather than referenced by path: the page is loaded over file://,
+    where a relative image request is a separate load the screenshot can race.
+    A data URI is part of the document, so once the page has parsed the bytes
+    are already there. Missing art is not an error — the scene falls back to its
+    own vector glyphs, which is what shipped before this set arrived.
+    """
+    sprite_dir = Path(sprite_dir or SPRITES)
+    if not sprite_dir.is_dir():
+        return {}
+
+    out = {}
+    for path in sorted(sprite_dir.glob("[wb][KQRBNP].png")):
+        colour, letter = path.stem[0], path.stem[1]
+        symbol = letter if colour == "w" else letter.lower()
+        encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+        out[symbol] = f"data:image/png;base64,{encoded}"
+    return out
+
+
 def caption_for(m, a):
     """Captions are built from engine facts only. Never invented."""
     label = a.get("label")
@@ -136,7 +160,10 @@ def render(moves_path=None, hook=None, opening_caption=None):
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": W, "height": H}, device_scale_factor=1)
-        page.add_init_script(f"window.__SCENE__ = {json.dumps(scene)};")
+        page.add_init_script(
+            f"window.__SCENE__ = {json.dumps(scene)};\n"
+            f"window.__PIECE_ART__ = {json.dumps(piece_sprites())};"
+        )
         page.goto(TEMPLATE.as_uri())
         warm_up(page)
 

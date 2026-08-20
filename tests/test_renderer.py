@@ -15,10 +15,20 @@ pytestmark = pytest.mark.renderer
 playwright = pytest.importorskip("playwright.sync_api")
 from playwright.sync_api import sync_playwright  # noqa: E402
 
-from src.renderer.render_short import TEMPLATE, build_scene, warm_up  # noqa: E402
+from src.renderer.render_short import (  # noqa: E402
+    TEMPLATE, build_scene, piece_sprites, warm_up,
+)
 
-SQ = 102.5
-CREAM = "#F2EDDF"
+SQ = 90  # the board is 720px across, eight squares
+
+
+def init_page(page, scene):
+    """Set the page up exactly the way render_short does, art included."""
+    page.add_init_script(
+        f"window.__SCENE__ = {json.dumps(scene)};\n"
+        f"window.__PIECE_ART__ = {json.dumps(piece_sprites())};"
+    )
+    page.goto(TEMPLATE.as_uri())
 
 
 def test_renderer_never_alters_the_move_sequence():
@@ -52,19 +62,18 @@ def test_board_matches_python_chess_at_the_starting_position():
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": 1080, "height": 1920})
-        page.add_init_script(f"window.__SCENE__ = {json.dumps(scene)};")
-        page.goto(TEMPLATE.as_uri())
+        init_page(page, scene)
         warm_up(page)
         page.evaluate("n => renderFrame(n)", 20)
         rendered = page.evaluate(
             """() => [...document.querySelectorAll('#pieces .pc')].map(d => ({
                 left: parseFloat(d.style.left), top: parseFloat(d.style.top),
-                fill: d.querySelector('g[data-body]').getAttribute('fill')}))"""
+                piece: d.dataset.piece}))"""
         )
         browser.close()
 
     got = {
-        (round(d["left"] / SQ), round(d["top"] / SQ)): ("white" if d["fill"].upper() == CREAM else "black")
+        (round(d["left"] / SQ), round(d["top"] / SQ)): ("white" if d["piece"].isupper() else "black")
         for d in rendered
     }
     assert len(rendered) == len(expected)
@@ -89,8 +98,7 @@ def test_identical_input_produces_byte_identical_frames():
         with sync_playwright() as p:
             browser = p.chromium.launch()
             page = browser.new_page(viewport={"width": 1080, "height": 1920})
-            page.add_init_script(f"window.__SCENE__ = {json.dumps(scene)};")
-            page.goto(TEMPLATE.as_uri())
+            init_page(page, scene)
             warm_up(page)
             out = {}
             for n in probe:
