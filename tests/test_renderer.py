@@ -16,7 +16,7 @@ playwright = pytest.importorskip("playwright.sync_api")
 from playwright.sync_api import sync_playwright  # noqa: E402
 
 from src.renderer.render_short import (  # noqa: E402
-    TEMPLATE, build_scene, piece_sprites, warm_up,
+    TEMPLATE, build_scene, mascot_sprites, piece_sprites, warm_up,
 )
 
 SQ = 90  # the board is 720px across, eight squares
@@ -26,9 +26,17 @@ def init_page(page, scene):
     """Set the page up exactly the way render_short does, art included."""
     page.add_init_script(
         f"window.__SCENE__ = {json.dumps(scene)};\n"
-        f"window.__PIECE_ART__ = {json.dumps(piece_sprites())};"
+        f"window.__PIECE_ART__ = {json.dumps(piece_sprites())};\n"
+        f"window.__MASCOT_ART__ = {json.dumps(mascot_sprites())};"
     )
     page.goto(TEMPLATE.as_uri())
+
+
+def test_original_teen_mascot_has_both_required_emotional_states():
+    art = mascot_sprites()
+
+    assert set(art) == {"confident", "regretful"}
+    assert all(uri.startswith("data:image/png;base64,") for uri in art.values())
 
 
 def test_renderer_never_alters_the_move_sequence():

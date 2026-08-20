@@ -27,7 +27,7 @@ def _window(start_s, end_s, fps):
     return round(start_s * fps), round(end_s * fps)
 
 
-def cues_for(moves, moment_ply, fps, hook_s, step_s, outro_s=2.0):
+def cues_for(moves, moment_ply, fps, hook_s, step_s, outro_s=2.0, slide_s=0.55):
     """Resolve the popup schedule to frame numbers for this render.
 
     Returns cues in time order. Each carries the frame range it owns, so the
@@ -46,23 +46,39 @@ def cues_for(moves, moment_ply, fps, hook_s, step_s, outro_s=2.0):
         index = plies.index(moment_ply) + 1
         # Waits for the move to land: reacting mid-slide reads as reacting to
         # nothing, because the piece being discussed is still in the air.
-        landed_s = hook_s + index * step_s
-        end_s = min(landed_s + ENTER_S + HOLD_S + EXIT_S, last_landed_s)
+        move_start_s = hook_s + (index - 1) * step_s
+        landed_s = move_start_s + slide_s
+        next_move_s = hook_s + index * step_s
+        desired_end_s = landed_s + ENTER_S + HOLD_S + EXIT_S
+        # With narration-paced moves, keep the full reaction on the move it
+        # describes. Legacy fast scenes cannot fit it and retain old behavior.
+        end_s = (
+            min(desired_end_s, next_move_s)
+            if next_move_s - landed_s >= MIN_VISIBLE_S
+            else min(desired_end_s, last_landed_s)
+        )
         if end_s - landed_s >= MIN_VISIBLE_S:
+            label = moves[index - 1].get("label")
             reaction = {
                 "kind": "reaction", "anchor_ply": moment_ply,
                 "text": moves[index - 1].get("caption", ""),
+                "expression": (
+                    "regretful" if label in ("inaccuracy", "mistake", "blunder")
+                    else "confident"
+                ),
                 "start_s": landed_s, "end_s": end_s,
             }
 
     # The hook opens the video and may run past the opening hold — nothing has
     # happened yet, so there is nothing for it to cover.
-    hook_end = min(hook_s + 2 * step_s, reaction["start_s"] if reaction else total_s)
+    hook_read_end = max(hook_s, MIN_VISIBLE_S) if hook_s >= 1.0 else hook_s
+    hook_end = min(hook_read_end, reaction["start_s"] if reaction else total_s)
     hook = None
     if hook_end >= MIN_VISIBLE_S:
         hook = {
             "kind": "hook", "anchor_ply": None,
-            "text": "Watch what I do here.",
+            "text": "Can you spot what I missed?",
+            "expression": "confident",
             "start_s": 0.0, "end_s": hook_end,
         }
 
@@ -73,6 +89,7 @@ def cues_for(moves, moment_ply, fps, hook_s, step_s, outro_s=2.0):
         outro = {
             "kind": "outro", "anchor_ply": None,
             "text": "What would you have played?",
+            "expression": "confident",
             "start_s": last_landed_s, "end_s": total_s,
         }
 

@@ -5,6 +5,20 @@
 
 ## Current milestone
 
+### 2026-08-20 — original teen mascot short
+
+- [x] Replaced popup pawn in active short with an original teenage male chess
+  learner: dark curly hair, medium-brown skin, navy/amber hoodie, no glasses,
+  and no wall-peeking pose. Two transparent states ship:
+  `teen_confident.png` and `teen_regretful.png`.
+- [x] Engine verdict now appears below board for every labelled move:
+  `BLUNDER`, `MISTAKE`, `INACCURACY`, `GOOD MOVE`, or `BEST MOVE`.
+- [x] Mascot expression follows Stockfish truth: negative labels use regretful;
+  good/best use confident. `Kg6` reaction freezes on correct position instead
+  of drifting into White's next move.
+- [x] Final 1080x1920 H.264 short rendered from verified plies 52-58 to
+  `output/content/2026-08-20-duolingo-003-full/short.mp4`.
+
 **Milestone: confirm the three ambiguous bridges, then make the video look good.**
 
 Extraction is solved. `src/workers/extract_game.py` reconstructs the complete
@@ -588,30 +602,14 @@ If it passes, apply the same method to Bridges 16–19. If it fails, abandon Gem
 
 ## Last session summary — 2026-08-20
 
-Extraction was not solved. The prototype recording is Duolingo's "Review your
-game" screen for its whole 41.4s, and the review steps backwards to demonstrate
-better moves; the reconstructor assumed states only advance and bridged each
-rewind with invented plies. Eight of the 96 plies never happened, one of them a
-position with a black king standing in check, and two of the three "ambiguous
-bridges" were asking which rook moved in a line nobody played.
+Rendered first complete visual short from verified recording. New original teen
+mascot replaces pawn in active format, with confident and regretful expressions
+driven by Stockfish labels. Board stays centered; move verdict appears below it.
+Reaction timing now freezes on `Kg6`, so sad pose, red `BLUNDER` card, and
+`Stockfish chose Ke6` bubble all describe same position.
 
-`src/validators/review_rewind.py` separates the replayed game from the
-demonstrations. The real game is 88 plies, contract-clean, emitted as
-`tests/fixtures/full_game_moves.json`. The third bridge was genuine and was
-settled by reading the frames: `fxe5 Rdxe5 Rxe5 Rxe5`, which is *not* the
-first-listed candidate a default would have taken.
-
-Stockfish depth 20 over all 88 plies puts the owner's worst moment at ply 56
-`Kg6`, a blunder at -35.04%, best move `Ke6` — the exact move the app's coach was
-demonstrating at t=22.4s. Two independent sources, same answer, and the rewind
-detector found it from board-state repeats alone.
-
-Also: the human confirmation CLI (refuses rather than guesses), the moment
-selector (owner's plies only, never the biggest number on the board), the piece
-glyphs redrawn, and three bugs of one class — the validator ignored castling
-rights, the analyser fed Stockfish positions with castling stripped, and
-`start_board` ignored the recorded en-passant square. 87 tests plus 4 renderer
-tests, all green.
+Final artifact: `output/content/2026-08-20-duolingo-003-full/short.mp4`, H.264,
+1080x1920, 30fps, 20.7s. Full fast suite: 109 passed; renderer suite: 5 passed.
 
 ## Previous session summary
 

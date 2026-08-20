@@ -127,6 +127,29 @@ accepted
 
 ## Project decisions
 
+### 2026-08-20 — Use an original teenage learner mascot in published shorts
+
+**Decision:**
+Use the original dark-curly-haired teenage chess learner in the active social
+format. Expressions follow engine labels: regretful for an inaccuracy, mistake,
+or blunder; confident for a good or best move. Keep the blocked red-haired,
+round-glasses character concepts out of published output.
+
+**Reason:**
+A human learner gives the channel a stronger on-screen host while preserving
+the learner-not-guru positioning. Changing hair, eyewear, facial proportions,
+clothing, pose, palette, and illustration style avoids the identifying
+combination documented in the earlier IP block.
+
+**Risk:**
+Generated expression variants can drift in identity. New states must use the
+accepted mascot as their reference and receive a visual consistency check.
+
+**Status:**
+accepted
+
+---
+
 ### 2026-08-18 — Use chess as the first automated social-content vertical
 
 **Decision:**  

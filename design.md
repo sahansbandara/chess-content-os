@@ -89,11 +89,18 @@ the check has to come back.
 - Arrows and circles are drawn only from verified moves or engine output — never
   decorative
 
-## Mascot — the pawn, popup model
+## Mascot — original teenage learner, popup model
 
-### Character: an original pawn
+> Active direction (2026-08-20): original teenage male chess learner, dark
+> curly hair with amber streak, medium-brown skin, navy/amber hoodie, no
+> glasses. Existing pawn stays as a preserved earlier experiment. Negative
+> engine labels use `teen_regretful`; good/best moves use `teen_confident`.
+> Character stays above board and never occludes it.
 
-The mascot is a **pawn** with eyes and expressions. Not a human character.
+### Archived experiment: original pawn
+
+Preserved below as prior design history. Active renderer uses teenage learner.
+Pawn assets remain available but are not selected for current published short.
 
 Why the pawn specifically, over a knight or any other piece:
 

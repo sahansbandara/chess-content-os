@@ -40,13 +40,17 @@ def test_the_reaction_is_anchored_to_the_moment_not_to_a_timestamp():
 
 def test_the_reaction_waits_until_the_move_has_landed():
     """Reacting while the piece is still sliding reads as reacting to nothing."""
-    hook_s, step_s, fps = 1.6, 0.95, 30
-    cues = cues_for(scene_moves(9), moment_ply=3, fps=fps, hook_s=hook_s, step_s=step_s)
+    hook_s, step_s, slide_s, fps = 1.6, 2.2, 0.55, 30
+    cues = cues_for(
+        scene_moves(9), moment_ply=3, fps=fps, hook_s=hook_s,
+        step_s=step_s, slide_s=slide_s,
+    )
 
     reaction = next(c for c in cues if c["kind"] == "reaction")
-    landed_s = hook_s + 3 * step_s
+    landed_s = hook_s + 2 * step_s + slide_s
 
     assert reaction["start_frame"] >= round(landed_s * fps)
+    assert reaction["end_frame"] <= round((hook_s + 3 * step_s) * fps)
 
 
 def test_cues_never_overlap():
@@ -72,6 +76,27 @@ def test_the_reaction_text_quotes_the_engine_rather_than_inventing_one():
     cues = cues_for(moves, moment_ply=3, fps=30, hook_s=1.6, step_s=0.95)
 
     assert next(c for c in cues if c["kind"] == "reaction")["text"] == moves[2]["caption"]
+
+
+@pytest.mark.parametrize(
+    ("label", "expression"),
+    [("blunder", "regretful"), ("mistake", "regretful"),
+     ("inaccuracy", "regretful"), ("good", "confident"), ("best", "confident")],
+)
+def test_reaction_expression_follows_the_engine_verdict(label, expression):
+    moves = scene_moves(9)
+    moves[2]["label"] = label
+
+    cues = cues_for(moves, moment_ply=3, fps=30, hook_s=1.6, step_s=0.95)
+
+    assert next(c for c in cues if c["kind"] == "reaction")["expression"] == expression
+
+
+def test_hook_and_outro_use_the_confident_expression():
+    cues = cues_for(scene_moves(9), moment_ply=3, fps=30, hook_s=1.6, step_s=0.95)
+
+    assert next(c for c in cues if c["kind"] == "hook")["expression"] == "confident"
+    assert next(c for c in cues if c["kind"] == "outro")["expression"] == "confident"
 
 
 def test_a_game_with_no_moment_still_gets_a_hook_and_an_outro():

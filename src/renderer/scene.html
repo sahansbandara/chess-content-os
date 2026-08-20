@@ -13,20 +13,20 @@
      top 134px, right 940px, bottom 1651px — which is why the mascot is inset
      from the right edge rather than cut off by it: that strip is where TikTok
      and Reels paint their action buttons. */
-  .hook{position:absolute;left:90px;top:146px;width:580px;color:#fff;
-        font-size:70px;font-weight:800;line-height:1.16;letter-spacing:-1.5px;
+  .hook{position:absolute;left:70px;top:108px;width:540px;color:#fff;
+        font-size:64px;font-weight:850;line-height:1.12;letter-spacing:-1.5px;
         text-shadow:0 4px 22px rgba(0,0,0,.55)}
 
-  #mascot{position:absolute;right:120px;top:170px;width:230px;height:410px;
+  #mascot{position:absolute;right:42px;top:72px;width:430px;height:500px;
           background-repeat:no-repeat;background-position:bottom center;
           background-size:contain;will-change:transform;z-index:3}
-  #bubble{position:absolute;right:380px;top:344px;width:400px;
-          background:#1B2027;border-radius:24px;padding:28px 32px;
-          color:#EDF1F6;font-size:36px;font-weight:650;line-height:1.3;
+  #bubble{position:absolute;left:70px;top:350px;width:500px;min-height:118px;
+          background:#1B2027;border:3px solid #E0A33E;border-radius:26px;padding:24px 30px;
+          color:#EDF1F6;font-size:32px;font-weight:700;line-height:1.25;
           box-shadow:0 12px 40px rgba(0,0,0,.45);z-index:4;
           will-change:transform,opacity}
-  #bubble:after{content:"";position:absolute;right:-24px;top:60px;
-                border:16px solid transparent;border-left-color:#1B2027;
+  #bubble:after{content:"";position:absolute;right:-27px;top:46px;
+                border:18px solid transparent;border-left-color:#E0A33E;
                 border-right:0}
 
   #frame{position:absolute;left:136px;top:620px;width:808px;height:808px;
@@ -53,6 +53,8 @@
   .chip .v{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
   .chip.bad{background:#3A1D22;border-color:#7A3038;color:#F3B0B5}
   .chip.bad .v{font-size:28px}
+  .chip.good{background:#183326;border-color:#316B4A;color:#9BE7B6}
+  .chip.quality{margin-left:auto;min-width:230px;justify-content:center;text-transform:uppercase}
 
   #evalrow{position:absolute;left:136px;top:1572px;width:808px;height:76px;
            background:#1A1F26;border:2px solid rgba(255,255,255,.07);
@@ -85,7 +87,7 @@ const SCENE = window.__SCENE__ || {};
 // Supplied piece art, keyed by FEN symbol. Absent means fall back to the
 // vector glyphs below, which is what shipped before the art existed.
 const PIECE_ART = window.__PIECE_ART__ || {};
-const MASCOT_ART = window.__MASCOT_ART__ || "";
+const MASCOT_ART = window.__MASCOT_ART__ || {};
 const CUES = SCENE.cues || [];
 const SQ = 90;
 const CREAM = "#F2EDDF", NAVY = "#1E2A44";
@@ -213,7 +215,11 @@ function mascotOffset(cue, frame){
 }
 
 const PIECE_NAMES = {k:"King",q:"Queen",r:"Rook",b:"Bishop",n:"Knight",p:"Pawn"};
-const BAD_LABELS = {blunder:"Blunder", mistake:"Mistake", inaccuracy:"Inaccuracy"};
+const QUALITY_LABELS = {
+  blunder:"Blunder", mistake:"Mistake", inaccuracy:"Inaccuracy",
+  good:"Good move", best:"Best move"
+};
+const BAD_LABELS = {blunder:true, mistake:true, inaccuracy:true};
 
 function drawCoords(){
   // Files and ranks follow the flip, so a board shown from the owner's side is
@@ -311,8 +317,11 @@ function renderFrame(n){
            + '<span class="v">'+mv.number+' '+mv.san+'</span></span></div>';
     chips += '<div class="chip"><span><span class="k">Piece</span>'
            + '<span class="v">'+(PIECE_NAMES[mv.piece.toLowerCase()]||"")+'</span></span></div>';
-    if (BAD_LABELS[mv.label] && local >= 1)
-      chips += '<div class="chip bad"><span class="v">'+BAD_LABELS[mv.label]+'</span></div>';
+    if (QUALITY_LABELS[mv.label] && local >= 1) {
+      const qualityClass = BAD_LABELS[mv.label] ? "bad" : "good";
+      chips += '<div class="chip quality '+qualityClass+'"><span class="v">'
+            + QUALITY_LABELS[mv.label]+'</span></div>';
+    }
   }
   document.getElementById("chips").innerHTML = chips;
 
@@ -325,12 +334,13 @@ function renderFrame(n){
 
   // mascot and its bubble. The bubble is the mascot's only text surface and it
   // appears and leaves with it — never a second caption competing with the hook.
-  const cue = MASCOT_ART ? activeCue(n) : null;
+  const cue = activeCue(n);
   const mascot = document.getElementById("mascot");
   const bubble = document.getElementById("bubble");
-  if (cue) {
+  const art = cue ? MASCOT_ART[cue.expression] : null;
+  if (cue && art) {
     const off = mascotOffset(cue, n);
-    mascot.style.backgroundImage = "url(" + MASCOT_ART + ")";
+    mascot.style.backgroundImage = "url(" + art + ")";
     mascot.style.transform = "translateX(" + off.toFixed(2) + "px)";
     bubble.textContent = cue.text;
     bubble.style.opacity = Math.max(0, 1 - off / 160).toFixed(3);

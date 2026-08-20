@@ -25,16 +25,16 @@ ROOT = Path(__file__).resolve().parents[2]
 MOVES = ROOT / "tests/fixtures/prototype_moves.json"
 TEMPLATE = ROOT / "src/renderer/scene.html"
 SPRITES = ROOT / "assets/renderer/pieces/sprites"
-MASCOT = ROOT / "assets/renderer/mascot/pawn_neutral_edge.png"
+MASCOTS = ROOT / "assets/renderer/mascot/teen"
 
 W, H, FPS = 1080, 1920, 30
-HOOK_S = 1.6      # hold on the starting position before the first move
-STEP_S = 0.95     # time per ply
+HOOK_S = 2.8      # readable hook before the first move
+STEP_S = 2.20     # includes a readable post-move hold for verdicts
 SLIDE_S = 0.55    # of which this much is the piece actually travelling
-OUTRO_S = 2.0
+OUTRO_S = 2.5
 
-HOOK = "I was already losing<br>and I had no idea"
-OPENING_CAPTION = "White is two pawns up before this clip even starts."
+HOOK = "One king move<br>gave the game back"
+OPENING_CAPTION = "I rushed the king move because the rook check looked scary."
 
 
 def build_scene(moves_path=None, hook=None, opening_caption=None):
@@ -108,7 +108,9 @@ def build_scene(moves_path=None, hook=None, opening_caption=None):
         "moves": moves,
         "content_id": doc["content_id"],
         "outro_s": OUTRO_S,
-        "cues": cues_for(moves, moment_ply, FPS, HOOK_S, STEP_S, OUTRO_S),
+        "cues": cues_for(
+            moves, moment_ply, FPS, HOOK_S, STEP_S, OUTRO_S, slide_s=SLIDE_S,
+        ),
     }
 
 
@@ -142,13 +144,24 @@ def piece_sprites(sprite_dir=None):
     return out
 
 
+def mascot_sprites(mascot_dir=None):
+    """Load original teen mascot expressions as deterministic inline art."""
+    mascot_dir = Path(mascot_dir or MASCOTS)
+    states = {}
+    for expression in ("confident", "regretful"):
+        uri = data_uri(mascot_dir / f"teen_{expression}.png")
+        if uri:
+            states[expression] = uri
+    return states
+
+
 def caption_for(m, a):
     """Captions are built from engine facts only. Never invented."""
     label = a.get("label")
     if label == "inaccuracy":
-        return f"{m['san']} — inaccuracy. {a['best_move_san']} was better."
+        return f"{m['san']} was inaccurate. Stockfish preferred {a['best_move_san']}."
     if label in ("mistake", "blunder"):
-        return f"{m['san']} — {label}. {a['best_move_san']} was the move."
+        return f"{m['san']} was a {label}. Stockfish chose {a['best_move_san']}."
     return f"{m['san']}."
 
 
@@ -184,7 +197,7 @@ def render(moves_path=None, hook=None, opening_caption=None):
         page.add_init_script(
             f"window.__SCENE__ = {json.dumps(scene)};\n"
             f"window.__PIECE_ART__ = {json.dumps(piece_sprites())};\n"
-            f"window.__MASCOT_ART__ = {json.dumps(data_uri(MASCOT))};"
+            f"window.__MASCOT_ART__ = {json.dumps(mascot_sprites())};"
         )
         page.goto(TEMPLATE.as_uri())
         warm_up(page)
