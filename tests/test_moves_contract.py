@@ -5,6 +5,8 @@ validator that downgrades any of these to a warning is broken: the whole point
 of the contract is that nothing downstream has to re-check chess truth.
 """
 
+import chess
+
 from src.validators.moves_contract import validate_moves
 
 START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
@@ -200,3 +202,17 @@ def test_castling_stays_illegal_when_the_document_grants_no_rights():
     doc["start_position"]["castling_rights"] = {"value": None, "provenance": "unknown"}
 
     assert [e["rule"] for e in validate_moves(doc)] == ["sequence_legal"]
+
+
+def test_start_board_is_exported_for_reuse():
+    """Anything that replays a document must build the board the same way.
+
+    The analyser had its own copy of this setup and forgot castling rights, which
+    silently corrupted every position after the first O-O.
+    """
+    from src.validators.moves_contract import start_board
+
+    doc = build_doc([], piece_placement="r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R")
+    doc["start_position"]["castling_rights"] = {"value": "KQkq", "provenance": "inferred"}
+
+    assert chess.Move.from_uci("e1g1") in start_board(doc["start_position"]).legal_moves

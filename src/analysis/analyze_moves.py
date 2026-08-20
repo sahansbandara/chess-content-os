@@ -17,7 +17,7 @@ import chess
 import chess.engine
 
 from src.analysis.move_quality import classify, win_percent
-from src.validators.moves_contract import validate_moves
+from src.validators.moves_contract import start_board, validate_moves
 
 DEFAULT_MOVES = Path("tests/fixtures/prototype_moves.json")
 
@@ -32,9 +32,10 @@ def _cp(pov_score):
 
 
 def analyse(doc, engine, depth=DEPTH):
-    board = chess.Board(None)
-    board.set_board_fen(doc["start_position"]["piece_placement"]["value"])
-    board.turn = chess.WHITE if doc["start_position"]["side_to_move"]["value"] == "w" else chess.BLACK
+    # Shared with the validator on purpose. This function used to build the board
+    # itself and forgot castling rights, which turned O-O into a bare king move
+    # and corrupted every position after it.
+    board = start_board(doc["start_position"])
 
     results = []
     for m in doc["moves"]:

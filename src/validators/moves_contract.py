@@ -14,7 +14,7 @@ RENDERABLE_STATUSES = {"verified", "human_confirmed"}
 START_POSITION_FIELDS = ("piece_placement", "side_to_move", "castling_rights", "en_passant")
 
 
-def _start_board(start_position):
+def start_board(start_position):
     board = chess.Board(None)
     board.set_board_fen(start_position["piece_placement"]["value"])
     board.turn = chess.WHITE if start_position["side_to_move"]["value"] == "w" else chess.BLACK
@@ -43,7 +43,7 @@ def validate_moves(doc):
                 }
             )
 
-    board = _start_board(start_position)
+    board = start_board(start_position)
 
     previous_side = None
     for m in doc["moves"]:
