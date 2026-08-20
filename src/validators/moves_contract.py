@@ -18,6 +18,12 @@ def _start_board(start_position):
     board = chess.Board(None)
     board.set_board_fen(start_position["piece_placement"]["value"])
     board.turn = chess.WHITE if start_position["side_to_move"]["value"] == "w" else chess.BLACK
+
+    # A piece-placement FEN carries no castling rights and `set_board_fen` clears
+    # them, so O-O would be illegal in every document unless the rights recorded
+    # in the contract are applied here.
+    rights = (start_position.get("castling_rights") or {}).get("value")
+    board.set_castling_fen(rights or "-")
     return board
 
 

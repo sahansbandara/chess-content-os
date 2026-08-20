@@ -23,6 +23,7 @@ Run:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import sys
@@ -37,6 +38,12 @@ import chess  # noqa: E402
 from src.perception.bridge_search import board_from_placement  # noqa: E402
 
 TIME_TOLERANCE_S = 1e-6
+
+# How a bridge may be settled, and what that makes the plies inside it. Frame
+# observation is evidence and yields `verified`; the owner's own answer is
+# stronger still and is recorded as such. `model_support` is absent on purpose:
+# a model agreeing with a candidate is an annotation, never a basis.
+BASIS_STATUS = {"human_confirmed": "human_confirmed", "local_visual": "verified"}
 
 
 class ConfirmationError(Exception):
@@ -111,28 +118,43 @@ def _record(ply, board, move, t, status, basis):
     }
 
 
-def apply_choices(extraction, choices):
-    """Replay the game with the human's chosen line at every ambiguous bridge.
+def _basis_for(bridge, basis_by_t):
+    basis = "human_confirmed"
+    for t, named in (basis_by_t or {}).items():
+        if _same_time(t, bridge["t"]):
+            basis = named
+    if basis not in BASIS_STATUS:
+        raise UnresolvedBridge(
+            f"t={bridge['t']}: {basis!r} cannot settle a bridge — "
+            f"valid bases are {sorted(BASIS_STATUS)}"
+        )
+    return basis
 
-    `choices` maps a bridge timestamp to a candidate index. Every bridge must
-    appear, and the result must reach the observed final board, or nothing is
-    returned at all.
+
+def apply_choices(extraction, choices, basis_by_t=None):
+    """Replay the game with the chosen line at every ambiguous bridge.
+
+    `choices` maps a bridge timestamp to a candidate index; `basis_by_t` records
+    how that bridge was settled, defaulting to the owner answering it. Every
+    bridge must appear, and the result must reach the observed final board, or
+    nothing is returned at all.
     """
     found = bridges(extraction)
     starts = {}
     covered = set()
     for bridge in found:
         index = _choice_for(bridge, choices)
+        basis = _basis_for(bridge, basis_by_t)
         if not bridge["plies"]:
             raise UnresolvedBridge(f"t={bridge['t']} covers no plies — extraction is inconsistent")
-        starts[bridge["plies"][0]] = (bridge, index)
+        starts[bridge["plies"][0]] = (bridge, index, basis)
         covered.update(bridge["plies"])
 
     board = _start_board(extraction)
     moves = []
     for observed in extraction["moves"]:
         if observed["ply"] in starts:
-            bridge, index = starts[observed["ply"]]
+            bridge, index, basis = starts[observed["ply"]]
             for san in bridge["candidates"][index].split():
                 try:
                     move = board.parse_san(san)
@@ -142,7 +164,7 @@ def apply_choices(extraction, choices):
                     ) from exc
                 moves.append(_record(
                     len(moves) + 1, board, move, bridge["t"],
-                    "human_confirmed", ["human_confirmed"],
+                    BASIS_STATUS[basis], [basis],
                 ))
                 board.push(move)
             continue
@@ -170,9 +192,10 @@ def apply_choices(extraction, choices):
     return moves
 
 
-def build_document(extraction, choices, *, content_id, owner_side="black", source=None):
-    """Assemble a moves.json document from the extraction and the human's choices."""
-    moves = apply_choices(extraction, choices)
+def build_document(extraction, choices, *, content_id, owner_side="black", source=None,
+                   basis_by_t=None):
+    """Assemble a moves.json document from the extraction and how each bridge was settled."""
+    moves = apply_choices(extraction, choices, basis_by_t)
 
     start = _start_board(extraction)
     end = _start_board(extraction)
@@ -198,6 +221,27 @@ def build_document(extraction, choices, *, content_id, owner_side="black", sourc
             "human_confirmed": statuses.count("human_confirmed"),
             "unresolved": 0,
         },
+    }
+
+
+def source_metadata(video, *, duration_s=None, scan_fps=None):
+    """Pin which recording this truth came from.
+
+    The hash matters more than it looks: a moves.json that cannot name its source
+    byte-for-byte is a claim without a receipt. The path is deliberately
+    repository-relative — the repository is public, and an absolute path under
+    /Users/<name>/ publishes the owner's real name.
+    """
+    digest = hashlib.sha256()
+    with open(video, "rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return {
+        "path": f"inbox/{Path(video).name}",
+        "kind": "duolingo_screen_recording",
+        "duration_s": duration_s,
+        "scan_fps": scan_fps,
+        "sha256": digest.hexdigest(),
     }
 
 
@@ -252,7 +296,11 @@ def main(argv=None):
     parser.add_argument("--owner-side", default="black", choices=["white", "black"])
     parser.add_argument(
         "--choose", action="append", default=[], metavar="T=INDEX",
-        help="answer a bridge non-interactively; repeatable",
+        help="the owner's own answer to a bridge; repeatable",
+    )
+    parser.add_argument(
+        "--visual", action="append", default=[], metavar="T=INDEX",
+        help="a bridge settled by reading the frames, recorded as local_visual; repeatable",
     )
     args = parser.parse_args(argv)
 
@@ -262,14 +310,26 @@ def main(argv=None):
         print("no ambiguous bridges — nothing to confirm")
 
     choices = dict(parse_choice(c) for c in args.choose)
+    basis_by_t = {}
+    for raw in args.visual:
+        t, index = parse_choice(raw)
+        choices[t] = index
+        basis_by_t[t] = "local_visual"
+
     missing = [b for b in found if not any(_same_time(t, b["t"]) for t in choices)]
     if missing and sys.stdin.isatty():
         choices.update(prompt_for_choices(missing))
 
     try:
+        settings = extraction.get("settings", {})
+        video = settings.get("video")
+        source = source_metadata(
+            video, duration_s=settings.get("duration"), scan_fps=settings.get("fps"),
+        ) if video and Path(video).exists() else None
+
         doc = build_document(
-            extraction, choices,
-            content_id=args.content_id, owner_side=args.owner_side,
+            extraction, choices, content_id=args.content_id,
+            owner_side=args.owner_side, basis_by_t=basis_by_t, source=source,
         )
     except ConfirmationError as exc:
         parser.exit(2, f"refused: {exc}\n")

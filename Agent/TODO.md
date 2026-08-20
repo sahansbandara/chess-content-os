@@ -28,32 +28,57 @@ Full phased plan: `docs/PLAN.md`.
   or a chosen line that does not replay to the observed final board all raise
   instead of writing a file. Candidate #1 never becomes truth by default.
 
-- [ ] **BLOCKED — the recording is a review session, not a game.** Every frame
+- [x] **The recording is a review session, not a game — handled.** Every frame
   from 0.2s to 40s is Duolingo's *"Review your game"* screen, and the review
-  steps **backwards** to demonstrate better moves. Three observed states repeat
-  an earlier one:
+  steps **backwards** to demonstrate better moves. The reconstructor assumed
+  states only move forward, so it bridged each rewind by inventing plies.
 
-  | first shown | shown again | what it is |
-  |---|---|---|
-  | t=20.300 | t=21.833 | rewind to the position after `Rf5+` |
-  | t=23.733 | t=24.300 | same position, split by transients |
-  | t=20.833 | t=24.800 | rewind back to the real game line |
+  `src/validators/review_rewind.py` splits observed states into the replayed
+  game and the demonstrations: the game advances only while the review sits on
+  the newest position it has ever shown, and anything observed behind that tip
+  is a demonstration. Wired into `extract_game.clean()`, 6 tests.
 
-  The reconstruction assumes states only move forward, so it bridged each rewind
-  by inventing moves. **Plies 57-64 of the 96-ply sequence never happened**:
-  `Re5 Kf7 Rf5+ Ke6 Re5+ Kf7 Rf5+ Kg6` is the review rewinding, showing the
-  coach's suggested `Ke6` ("Next time, there's a better move for that king",
-  t=22.4s, eval label flips `BIG DISADVANTAGE` → `EQUAL CHANCES`), then rewinding
-  again to the move actually played. The real game is **88 plies**: after ply 56
-  (`Kg6`) comes ply 65 (`Rd5`).
+  Result on the prototype recording: 2 rewinds found (t=21.83 back to t=20.30,
+  t=24.80 back to t=20.83), 2 demonstrated states dropped, and **plies 57-64 of
+  the old 96-ply sequence deleted** — `Re5 Kf7 Rf5+ Ke6 Re5+ Kf7 Rf5+ Kg6` was
+  the review rewinding, showing the coach's suggested `Ke6` ("Next time, there's
+  a better move for that king", t=22.4s, eval flips `BIG DISADVANTAGE` →
+  `EQUAL CHANCES`), then rewinding again to what was actually played. One of
+  those fabricated positions had a black king standing in check.
 
-  Ambiguous bridges 2 (t=21.83) and 3 (t=24.80) are therefore not ambiguities at
-  all — asking which rook moved is asking about moves nobody played. **Bridge 1
-  (t=16.73) is genuine**: no state repeat, four real recapture orders on e5, and
-  it still needs the owner's answer.
+  **The real game is 88 plies**, `complete=True`, 0 impossible positions, 0
+  impossible transitions. Ambiguous bridges 2 and 3 disappeared with the
+  fabricated plies — they were never ambiguities.
 
-- [ ] **Emit the full game as `moves.json`** — blocked on the above. Cannot ship
-  a 96-ply sequence that contains 8 fabricated plies.
+  Known limitation, documented in the module: any return to a previous placement
+  is treated as a rewind, so a genuine threefold repetition in a recording of
+  *live* play would be discarded the same way. Safe for review recordings, wrong
+  for live ones. Every rewind is reported rather than silently applied.
+
+- [x] **Bridge 1 (t=16.73) resolved from the frames**, basis `local_visual`.
+  The four candidates differed in the recapture order on e5. Frame evidence:
+  the f6 pawn is mid-flight to e5 at t=16.20 (so `fxe5` came first, not
+  `Rxe5`), the d5 rook slides to e5 across t=16.30-16.42 while the e1 rook never
+  leaves home (so `Rdxe5`), then e5 empties and the e1 rook departs at t=16.64.
+  The line is **`fxe5 Rdxe5 Rxe5 Rxe5`** — candidate index 2, *not* the
+  first-listed candidate a default would have taken.
+
+- [x] **Full game emitted as `moves.json`** — `tests/fixtures/full_game_moves.json`,
+  88 plies, `validate_moves` clean, `sha256` pinning the source recording (it
+  matches `opening_moves.json`, confirming the same file). Built with:
+
+  ```bash
+  uv run python src/workers/confirm_bridges.py logs/extracted_game_v2.json --visual 16.733=2 --content-id 2026-08-20-duolingo-003-full --out tests/fixtures/full_game_moves.json
+  ```
+
+- [x] **Contract validator bug found and fixed.** `moves_contract._start_board`
+  ignored `start_position.castling_rights`, so `O-O` read as illegal and every
+  game where either side castles would have been rejected. It never surfaced
+  because the opening fixture has no castling. 2 tests added.
+
+- [ ] **Stockfish over all 88 plies** — running; replaces the opening-only
+  analysis. `tests/fixtures/prototype_moves.json` is superseded by the 88-ply
+  document and should be marked as such.
 
 - [ ] **Redraw the piece glyphs.** The owner's words: "lot of quality issues...
   pieces need to be more good looking". Spec in `design.md` — cream `#F2EDDF`,

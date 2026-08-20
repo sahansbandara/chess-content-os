@@ -170,3 +170,49 @@ def test_the_bridge_description_numbers_candidates_without_recommending_one():
     assert "[1] Rexe5 Rxe5 Rxe5" in text
     for word in ("recommend", "default", "likely", "best"):
         assert word not in text.lower()
+
+
+def test_a_bridge_resolved_from_the_frames_is_verified_on_a_local_visual_basis():
+    doc = two_rook_extraction()
+
+    moves = apply_choices(doc, {1.0: 1}, basis_by_t={1.0: "local_visual"})
+
+    assert [m["verification_status"] for m in moves[:3]] == ["verified"] * 3
+    assert moves[0]["verification_basis"] == ["local_visual"]
+
+
+def test_an_unknown_basis_is_refused():
+    doc = two_rook_extraction()
+
+    with pytest.raises(UnresolvedBridge):
+        apply_choices(doc, {1.0: 1}, basis_by_t={1.0: "model_support"})
+
+
+def test_the_summary_counts_a_visually_resolved_bridge_as_verified():
+    doc = two_rook_extraction()
+
+    built = build_document(
+        doc, {1.0: 1}, content_id="test-002", basis_by_t={1.0: "local_visual"},
+    )
+
+    assert validate_moves(built) == []
+    assert built["verification_summary"] == {
+        "verified": 4, "human_confirmed": 0, "unresolved": 0,
+    }
+
+
+def test_source_metadata_pins_the_recording_by_hash(tmp_path):
+    from src.workers.confirm_bridges import source_metadata
+
+    video = tmp_path / "ScreenRecording.mov"
+    video.write_bytes(b"not really a movie")
+
+    meta = source_metadata(video, duration_s=41.4, scan_fps=30.0)
+
+    assert meta["path"] == "inbox/ScreenRecording.mov"
+    assert meta["kind"] == "duolingo_screen_recording"
+    assert meta["duration_s"] == 41.4
+    assert meta["scan_fps"] == 30.0
+    assert meta["sha256"] == (
+        "dfb6cb3868cdfff914316e059b2b998b5abc12068ac8fccc8ed1a45c8d22af9e"
+    )

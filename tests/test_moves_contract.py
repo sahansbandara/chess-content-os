@@ -177,3 +177,26 @@ def test_resolved_prefix_of_the_prototype_chain_passes():
     doc["moves"] = [m for m in doc["moves"] if m["ply"] <= 15]
 
     assert validate_moves(doc) == []
+
+
+def test_castling_is_legal_when_the_start_position_grants_the_rights():
+    """A piece-placement FEN carries no castling rights, so the document does.
+
+    Ignoring them makes O-O read as illegal and rejects every game where either
+    side castles — which is most of them.
+    """
+    doc = build_doc([
+        move(1, "e1g1", "O-O", "w"),
+        move(2, "e8g8", "O-O", "b"),
+    ], piece_placement="r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R")
+    doc["start_position"]["castling_rights"] = {"value": "KQkq", "provenance": "inferred"}
+
+    assert validate_moves(doc) == []
+
+
+def test_castling_stays_illegal_when_the_document_grants_no_rights():
+    doc = build_doc([move(1, "e1g1", "O-O", "w")],
+                    piece_placement="r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R")
+    doc["start_position"]["castling_rights"] = {"value": None, "provenance": "unknown"}
+
+    assert [e["rule"] for e in validate_moves(doc)] == ["sequence_legal"]

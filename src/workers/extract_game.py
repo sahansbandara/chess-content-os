@@ -41,6 +41,7 @@ from dense_board_track import (  # noqa: E402
 from src.perception.bridge_search import board_from_placement, find_paths, san_line  # noqa: E402
 from src.validators.constrained_reclassify import drop_transient_states, resolve_misread  # noqa: E402
 from src.validators.material_sanity import check_material, check_transition  # noqa: E402
+from src.validators.review_rewind import split_mainline  # noqa: E402
 
 
 def observe(video, profile_path, start, end, fps, window, min_hold):
@@ -68,7 +69,14 @@ def observe(video, profile_path, start, end, fps, window, min_hold):
 
 
 def clean(runs):
-    """Drop transients, then repair misread pieces. Returns (runs, report)."""
+    """Drop transients, repair misread pieces, then strip review demonstrations.
+
+    The order matters. A misread piece breaks the placement equality that rewind
+    detection depends on, so repairs come first; a demonstration that is left in
+    becomes invented plies downstream, so it goes before reconstruction.
+
+    Returns (runs, report).
+    """
     runs, dropped = drop_transient_states([dict(r) for r in runs])
 
     repairs, unresolved = [], []
@@ -82,7 +90,14 @@ def clean(runs):
         else:
             unresolved.append({"t": runs[i]["t_start"], "detail": res})
 
-    return runs, {"transients_dropped": len(dropped), "pieces_repaired": repairs, "unresolved": unresolved}
+    runs, review = split_mainline(runs)
+
+    return runs, {
+        "transients_dropped": len(dropped),
+        "pieces_repaired": repairs,
+        "unresolved": unresolved,
+        "review": review,
+    }
 
 
 def reconstruct(runs, max_plies=4):
@@ -135,6 +150,16 @@ def main():
     print(f"  dropped {report['transients_dropped']} transients, repaired {len(report['pieces_repaired'])} pieces")
     for r in report["pieces_repaired"]:
         print(f"    t={r['t']:.2f} {r['square']}: {r['observed']} -> {r['corrected_to']}")
+
+    review = report["review"]
+    print(f"  review: {len(review['rewinds'])} rewinds, "
+          f"{len(review['branch_states'])} demonstrated states dropped, "
+          f"{len(runs)} states on the played line")
+    for r in review["rewinds"]:
+        print(f"    t={r['t']:.2f} stepped back to the position first shown at t={r['back_to_t']:.2f}")
+    if review["ends_off_mainline"]:
+        print("    WARNING: the recording ends inside a demonstration — "
+              "the tail of the game was never shown")
 
     bad = sum(1 for a, b in zip(runs, runs[1:]) if check_transition(a["board_fen"], b["board_fen"]))
     insane = sum(1 for r in runs if check_material(r["board_fen"]))
