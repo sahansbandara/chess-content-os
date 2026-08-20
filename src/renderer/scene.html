@@ -7,79 +7,52 @@
   #stage{position:relative;width:1080px;height:1920px;
          font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
          -webkit-font-smoothing:antialiased}
-  /* Layout follows the owner's mockup: hook top-left, mascot peeking from the
-     right with a speech bubble, board with coordinates, then the move chips and
-     the evaluation row. Everything sits inside the platform safe zones —
-     top 134px, right 940px, bottom 1651px — which is why the mascot is inset
-     from the right edge rather than cut off by it: that strip is where TikTok
-     and Reels paint their action buttons. */
-  .hook{position:absolute;left:70px;top:108px;width:540px;color:#fff;
-        font-size:64px;font-weight:850;line-height:1.12;letter-spacing:-1.5px;
-        text-shadow:0 4px 22px rgba(0,0,0,.55)}
-
-  #mascot{position:absolute;right:42px;top:72px;width:430px;height:500px;
+  /* Three surfaces only: character + bubble, complete board, verdict. */
+  #mascot{position:absolute;right:42px;top:32px;width:440px;height:500px;
           background-repeat:no-repeat;background-position:bottom center;
           background-size:contain;will-change:transform;z-index:3}
-  #bubble{position:absolute;left:70px;top:350px;width:500px;min-height:118px;
+  #bubble{position:absolute;left:70px;top:280px;width:500px;min-height:132px;
           background:#1B2027;border:3px solid #E0A33E;border-radius:26px;padding:24px 30px;
-          color:#EDF1F6;font-size:32px;font-weight:700;line-height:1.25;
+          color:#EDF1F6;font-size:34px;font-weight:700;line-height:1.25;
           box-shadow:0 12px 40px rgba(0,0,0,.45);z-index:4;
           will-change:transform,opacity}
   #bubble:after{content:"";position:absolute;right:-27px;top:46px;
                 border:18px solid transparent;border-left-color:#E0A33E;
                 border-right:0}
 
-  #frame{position:absolute;left:136px;top:620px;width:808px;height:808px;
+  #frame{position:absolute;left:76px;top:530px;width:928px;height:928px;
          background:#1A1F26;border:2px solid rgba(255,255,255,.07);
          border-radius:22px;box-shadow:0 18px 60px rgba(0,0,0,.55)}
-  #board{position:absolute;left:180px;top:664px;width:720px;height:720px;
+  #board{position:absolute;left:120px;top:574px;width:840px;height:840px;
          border-radius:6px;overflow:hidden}
   #squares{position:absolute;inset:0}
   #pieces{position:absolute;inset:0}
-  .sq{position:absolute;width:90px;height:90px}
-  .hl{position:absolute;width:90px;height:90px;background:#E0A33E;opacity:.34}
+  .sq{position:absolute;width:105px;height:105px}
+  .hl{position:absolute;width:105px;height:105px;background:#E0A33E;opacity:.34}
   .hl.bad{background:#C6434A;opacity:.52}
-  .pc{position:absolute;width:90px;height:90px;
+  .pc{position:absolute;width:105px;height:105px;
        background-repeat:no-repeat;background-position:center;background-size:100% 100%}
   .coord{position:absolute;color:#7C8794;font-size:22px;font-weight:700;
          text-align:center;line-height:44px;width:44px;height:44px}
 
-  #chips{position:absolute;left:136px;top:1452px;width:808px;height:104px;
-         display:flex;gap:16px}
-  .chip{background:#1A1F26;border:2px solid rgba(255,255,255,.07);
-        border-radius:18px;padding:16px 22px;display:flex;align-items:center;
-        gap:14px;color:#E8EDF3}
-  .chip .k{color:#7C8794;font-size:20px;font-weight:700;display:block}
-  .chip .v{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
-  .chip.bad{background:#3A1D22;border-color:#7A3038;color:#F3B0B5}
-  .chip.bad .v{font-size:28px}
-  .chip.good{background:#183326;border-color:#316B4A;color:#9BE7B6}
-  .chip.quality{margin-left:auto;min-width:230px;justify-content:center;text-transform:uppercase}
-
-  #evalrow{position:absolute;left:136px;top:1572px;width:808px;height:76px;
-           background:#1A1F26;border:2px solid rgba(255,255,255,.07);
-           border-radius:18px;display:flex;align-items:center;padding:0 26px;
-           gap:18px;color:#7C8794;font-size:26px;font-weight:700}
-  #evalwrap{position:relative;flex:1;height:12px;
-            background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden}
-  #evalfill{position:absolute;left:0;top:0;bottom:0;background:#C65454;border-radius:99px}
-  #evaltxt{color:#8FD16A;font-size:26px;font-weight:800;white-space:nowrap}
+  #verdict{position:absolute;left:136px;top:1515px;width:808px;height:150px;
+           border:3px solid rgba(255,255,255,.10);border-radius:28px;
+           background:#1A1F26;color:#E8EDF3;display:flex;align-items:center;
+           justify-content:center;font-size:54px;font-weight:900;
+           letter-spacing:2px;text-transform:uppercase}
+  #verdict.bad{background:#431E24;border-color:#A9434E;color:#FFC0C6}
+  #verdict.good{background:#173A29;border-color:#3B8B5D;color:#A8F2C1}
+  #verdict:empty{opacity:0}
   .safe{position:absolute;pointer-events:none}
 </style>
 
 <div id="stage">
-  <div class="hook" id="hook"></div>
   <div id="mascot"></div>
   <div id="bubble"></div>
   <div id="frame"></div>
   <div id="coords"></div>
   <div id="board"><div id="squares"></div><div id="pieces"></div></div>
-  <div id="chips"></div>
-  <div id="evalrow">
-    <span>Evaluation</span>
-    <div id="evalwrap"><div id="evalfill"></div></div>
-    <span id="evaltxt"></span>
-  </div>
+  <div id="verdict"></div>
 </div>
 
 <script>
@@ -89,7 +62,7 @@ const SCENE = window.__SCENE__ || {};
 const PIECE_ART = window.__PIECE_ART__ || {};
 const MASCOT_ART = window.__MASCOT_ART__ || {};
 const CUES = SCENE.cues || [];
-const SQ = 90;
+const SQ = 105;
 const CREAM = "#F2EDDF", NAVY = "#1E2A44";
 
 // --- original vector piece glyphs -------------------------------------------
@@ -230,11 +203,11 @@ function drawCoords(){
   const R = SCENE.flip ? ranks.slice().reverse() : ranks;
   let h = "";
   for (let i = 0; i < 8; i++){
-    const x = 180 + i * SQ + SQ/2 - 22, y = 664 + i * SQ + SQ/2 - 22;
-    h += '<div class="coord" style="left:'+x+'px;top:622px">'+F[i]+'</div>';
-    h += '<div class="coord" style="left:'+x+'px;top:1386px">'+F[i]+'</div>';
-    h += '<div class="coord" style="left:140px;top:'+y+'px">'+R[i]+'</div>';
-    h += '<div class="coord" style="left:900px;top:'+y+'px">'+R[i]+'</div>';
+    const x = 120 + i * SQ + SQ/2 - 22, y = 574 + i * SQ + SQ/2 - 22;
+    h += '<div class="coord" style="left:'+x+'px;top:532px">'+F[i]+'</div>';
+    h += '<div class="coord" style="left:'+x+'px;top:1416px">'+F[i]+'</div>';
+    h += '<div class="coord" style="left:80px;top:'+y+'px">'+R[i]+'</div>';
+    h += '<div class="coord" style="left:960px;top:'+y+'px">'+R[i]+'</div>';
   }
   document.getElementById("coords").innerHTML = h;
 }
@@ -308,29 +281,11 @@ function renderFrame(n){
   }
   document.getElementById("pieces").innerHTML = hl + html;
 
-  document.getElementById("hook").innerHTML = SCENE.hook;
-
-  // chips: what was played, with what, and what the engine made of it
-  let chips = "";
-  if (started) {
-    chips += '<div class="chip"><span><span class="k">Move</span>'
-           + '<span class="v">'+mv.number+' '+mv.san+'</span></span></div>';
-    chips += '<div class="chip"><span><span class="k">Piece</span>'
-           + '<span class="v">'+(PIECE_NAMES[mv.piece.toLowerCase()]||"")+'</span></span></div>';
-    if (QUALITY_LABELS[mv.label] && local >= 1) {
-      const qualityClass = BAD_LABELS[mv.label] ? "bad" : "good";
-      chips += '<div class="chip quality '+qualityClass+'"><span class="v">'
-            + QUALITY_LABELS[mv.label]+'</span></div>';
-    }
-  }
-  document.getElementById("chips").innerHTML = chips;
-
-  // eval bar — interpolates with the move so the position is seen collapsing
-  const prev = idx > 0 ? SCENE.moves[idx-1].white_win : SCENE.moves[0].white_win;
-  const cur = mv.white_win;
-  const shown = started ? prev + (cur - prev) * p : SCENE.moves[0].white_win;
-  document.getElementById("evalfill").style.width = shown.toFixed(2) + "%";
-  document.getElementById("evaltxt").textContent = "White " + shown.toFixed(0) + "%";
+  // One verdict only below board. No competing move, piece, or evaluation UI.
+  const verdict = document.getElementById("verdict");
+  const verdictReady = started && local >= 1 && QUALITY_LABELS[mv.label];
+  verdict.textContent = verdictReady ? QUALITY_LABELS[mv.label] : "";
+  verdict.className = verdictReady ? (BAD_LABELS[mv.label] ? "bad" : "good") : "";
 
   // mascot and its bubble. The bubble is the mascot's only text surface and it
   // appears and leaves with it — never a second caption competing with the hook.

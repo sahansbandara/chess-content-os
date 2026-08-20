@@ -18,6 +18,9 @@
   of drifting into White's next move.
 - [x] Final 1080x1920 H.264 short rendered from verified plies 52-58 to
   `output/content/2026-08-20-duolingo-003-full/short.mp4`.
+- [x] Simplified active layout after visual review: top contains only sliding
+  mascot and bubble, middle contains full 840px board, bottom contains one large
+  engine verdict. Removed headline, move/piece chips, and evaluation bar.
 
 **Milestone: confirm the three ambiguous bridges, then make the video look good.**
 
@@ -608,8 +611,10 @@ driven by Stockfish labels. Board stays centered; move verdict appears below it.
 Reaction timing now freezes on `Kg6`, so sad pose, red `BLUNDER` card, and
 `Stockfish chose Ke6` bubble all describe same position.
 
-Final artifact: `output/content/2026-08-20-duolingo-003-full/short.mp4`, H.264,
-1080x1920, 30fps, 20.7s. Full fast suite: 109 passed; renderer suite: 5 passed.
+Final frame now has three surfaces only: top mascot/bubble, middle 840px board,
+bottom large verdict; secondary dashboard UI removed. Final artifact:
+`output/content/2026-08-20-duolingo-003-full/short.mp4`, H.264, 1080x1920,
+30fps, 20.7s. Full fast suite: 109 passed; renderer suite: 6 passed.
 
 ## Previous session summary
 

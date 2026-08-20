@@ -97,6 +97,10 @@ the check has to come back.
 > engine labels use `teen_regretful`; good/best moves use `teen_confident`.
 > Character stays above board and never occludes it.
 
+Active frame has exactly three surfaces: sliding mascot plus speech bubble at
+top, complete 840×840 chessboard in middle, and one large engine verdict below.
+No headline, move chip, piece chip, or evaluation bar competes with board.
+
 ### Archived experiment: original pawn
 
 Preserved below as prior design history. Active renderer uses teenage learner.
