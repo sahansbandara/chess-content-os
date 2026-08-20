@@ -145,7 +145,7 @@ Full phased plan: `docs/PLAN.md`.
   both prompts, the exact geometry, and the failure mode each instruction exists
   to prevent.
 
-  **Board: accepted.** `assets/renderer/board/board.html` — 720x720, 64 explicit
+  **Board: accepted.** `src/renderer/board.html` — 720x720, 64 explicit
   `<rect>`s on exact 90px boundaries, ids `a1`-`h8`, a1 dark and bottom-left, no
   border, no coordinate labels, no gradients, real geometry. Nothing to fix.
 
