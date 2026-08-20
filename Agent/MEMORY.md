@@ -1,6 +1,6 @@
 # Chess Content OS — Agent Memory
 
-> Last updated: 2026-08-19
+> Last updated: 2026-08-20
 > Purpose: durable project knowledge that future coding/agent sessions should load before making changes.
 
 ## Do not store
@@ -896,3 +896,29 @@ Execute Phase 1 of `docs/PLAN.md`: freeze the `moves.json` contract from a hand-
 Bridges 16-19 are no longer a blocker. They are resolved by human confirmation of the move list, and they sit in a drawn endgame shuffle that gets cut from a 35-second short anyway.
 
 Outstanding validation debt on the Bridge 10 control: repeat it 3-5 times and test with shuffled/reversed frame order before applying constrained Gemini to any unresolved bridge.
+
+## The prototype recording — what it actually is (2026-08-20)
+
+`inbox/ScreenRecording_08-18-2026 7-16-25 pm_1.mov`
+(sha256 `776bf242f9efebee63e271812afe9a131b15375dce04d89e9b3dd31b6cbcc261`)
+is **Duolingo's "Review your game" screen for its whole 41.4s**, not live play.
+The header reads "Review your game" from t=0.2s to t=40s, the progress bar fills
+monotonically, and the screen offers `FIX MOVE` / `HINT` controls.
+
+Consequences that any future session must not rediscover the hard way:
+
+- The review **steps backwards** to demonstrate better moves. Board states repeat.
+  Anything that assumes states only advance will invent plies.
+- The real game is **88 plies**, in `tests/fixtures/full_game_moves.json`,
+  `validate_moves` clean. The earlier 96-ply reconstruction contained 8
+  fabricated plies (57-64).
+- The owner plays **black**. Stockfish depth 20 over all 88 plies puts the
+  owner's worst moment at **ply 56 `Kg6`, a blunder at -35.04% win, best move
+  `Ke6`** — which is the exact move the app's coach was demonstrating at t=22.4s.
+  Two independent sources, same answer.
+- White blundered on the ply before (55 `Rf5+`, -35.41%), and again at 71 `c4`
+  (-47.24%) and 77 `c5` (-38.57%). The owner's earlier mistakes are 6 `c6`
+  (-11.20%), 8 `Bc5` (-10.61%) and 24 `Nxe5` (-10.37%).
+- `logs/` and `inbox/` are gitignored, so a fresh worktree has neither the
+  recording nor `logs/extracted_game.json`. Copy them from the main checkout
+  before running any extraction worker.

@@ -1,6 +1,6 @@
 # Chess Content OS — Architecture Decisions
 
-> Last updated: 2026-08-19
+> Last updated: 2026-08-20
 > This file now records Chess Content OS decisions. Generic template decisions are not treated as project facts unless explicitly re-validated in this repository.
 
 ## Decision format
@@ -21,6 +21,70 @@ Downside or tradeoff.
 
 **Status:**  
 Proposed / accepted / changed / rejected / experimental
+
+---
+
+### 2026-08-20 — A recorded review screen is not a recorded game
+
+**Decision:**
+Treat any return to an already-observed board placement as a review rewind, cut
+the states observed while the review sits behind the newest position it has
+shown, and never bridge across the gap. Implemented in
+`src/validators/review_rewind.py` and wired into `extract_game.clean()`.
+
+**Reason:**
+The prototype source is Duolingo's *"Review your game"* screen for its entire
+41s, not live play. The review steps backwards to demonstrate a better move and
+then forwards again to the move actually played. The reconstructor assumed board
+states only ever advance, so it bridged each rewind with invented plies — eight
+of them, including a position with a black king standing in check, and two
+"ambiguous bridges" that were asking which rook moved in a line nobody played.
+
+Independent corroboration arrived from two directions afterwards. The coach's
+speech bubble at t=22.4s reads "Next time, there's a better move for that king",
+and Stockfish at depth 20 names the owner's worst moment as exactly that ply —
+`Kg6`, a 35.04% blunder, best move `Ke6`, which is the move the review was
+demonstrating.
+
+**Alternatives considered:**
+Reading the review UI header (eval label, coach text, progress bar) to mark
+demonstrations explicitly — more robust, since it also catches a demonstration
+that wanders off and never returns, but it needs a new OCR/template surface.
+Re-recording live gameplay instead — the cleanest source fix, and still the right
+answer for future recordings.
+
+**Risk:**
+A genuine threefold repetition in a recording of *live* play would be discarded
+the same way. Safe for review recordings, wrong for live ones. Every rewind is
+reported rather than silently applied, and the limitation is documented in the
+module.
+
+**Status:**
+accepted
+
+---
+
+### 2026-08-20 — Frame observation is a basis; a printed candidate never is
+
+**Decision:**
+`confirm_bridges` settles a bridge only on an explicit answer, and records how:
+`human_confirmed` when the owner answers, `local_visual` when the frames were
+read. An unanswered bridge, an out-of-range index, and a line that does not
+replay to the observed final board all refuse to write a file.
+
+**Reason:**
+Bridge 1's four candidates differed in the recapture order on e5. Reading the
+frames settled it — the f6 pawn is mid-flight to e5 at t=16.20, the d5 rook
+follows across t=16.30-16.42 while the e1 rook never leaves home. The answer is
+`fxe5 Rdxe5 Rxe5 Rxe5`, candidate index 2. The first-listed candidate, which a
+default would have taken, was **wrong**.
+
+**Risk:**
+`local_visual` is weaker than the owner's own answer and is recorded as such, so
+a later pass can upgrade it rather than having to rediscover that it was a guess.
+
+**Status:**
+accepted
 
 ---
 

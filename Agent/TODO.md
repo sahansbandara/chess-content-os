@@ -1,6 +1,6 @@
 # Chess Content OS — TODO
 
-> Last updated: 2026-08-19
+> Last updated: 2026-08-20
 > This file replaces the generic template task list with the actual Chess Content OS roadmap.
 
 ## Current milestone
@@ -76,17 +76,42 @@ Full phased plan: `docs/PLAN.md`.
   game where either side castles would have been rejected. It never surfaced
   because the opening fixture has no castling. 2 tests added.
 
-- [ ] **Stockfish over all 88 plies** — running; replaces the opening-only
-  analysis. `tests/fixtures/prototype_moves.json` is superseded by the 88-ply
-  document and should be marked as such.
+- [x] **Stockfish depth 20 over all 88 plies** —
+  `output/content/2026-08-20-duolingo-003-full/analysis.json`.
+  **The owner's worst moment is ply 56 `Kg6`, a blunder at -35.04% win; best was
+  `Ke6`** — the exact move the app's coach was demonstrating at t=22.4s, which is
+  independent corroboration that the rewind detector cut the right states.
+  White blundered first with 55 `Rf5+` (-35.41%), then 71 `c4` (-47.24%) and
+  77 `c5` (-38.57%). The owner's earlier errors: 6 `c6` (-11.20%), 8 `Bc5`
+  (-10.61%), 24 `Nxe5` (-10.37%).
+  Fixing this run also exposed a bug: `analyze_moves` built its own start board
+  and dropped the document's castling rights, so every position before a castle
+  went to Stockfish with castling unavailable to both sides. Validator and
+  analyser now share one `start_board` helper.
 
-- [ ] **Redraw the piece glyphs.** The owner's words: "lot of quality issues...
-  pieces need to be more good looking". Spec in `design.md` — cream `#F2EDDF`,
-  navy `#1E2A44`, amber accent, matching outline weight. Unblocked by the above;
-  presentation work does not depend on move truth.
+- [x] **`tests/fixtures/prototype_moves.json` marked superseded** — carries a
+  `superseded_by` note; its builder's docstring says so too. Kept, not deleted:
+  the contract tests use its unresolved plies to prove the renderer gate blocks
+  them, and prior probes are not deleted.
 
-Then: pawn mascot popups (`design.md` has the full spec), voice, burned captions,
-and a ~35s runtime instead of 12s.
+- [x] **Piece glyphs redrawn.** Every piece now shares one baseline and one
+  foot, height carries the hierarchy, and the outline pass paints under the fill
+  pass so overlapping parts union into a single contour. Two interior marks earn
+  their place: the knight's eye and the bishop's mitre slit. The set went from
+  under half a square wide to a proper footprint. Verified at true board scale in
+  a real 1080x1920 scene frame, not just on a swatch sheet.
+
+## Current — next three tasks, in order
+
+- [ ] **Moment selector.** The whole 88-ply game is analysed but a short cannot
+  be 88 plies. Target ply 56 (`Kg6`, -35.04%) with the run-up from ply 53, and
+  cut the rest. `docs/PLAN.md` has the four-beat structure.
+- [ ] **Pawn mascot popups** — `design.md` has the full spec, three per short,
+  occlusion of the discussed squares is a hard validator failure.
+- [ ] **Voice and burned captions**, then a ~35s runtime instead of 12s.
+
+The hook writes itself now and it is true: the app told the owner there was a
+better king move, and Stockfish independently names the same move.
 
 ## Deferred — Phase 0 leftovers
 

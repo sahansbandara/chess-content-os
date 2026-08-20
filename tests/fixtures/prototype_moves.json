@@ -1,6 +1,11 @@
 {
   "schema_version": "1.0",
   "content_id": "2026-08-19-duolingo-001",
+  "superseded_by": {
+    "by": "tests/fixtures/full_game_moves.json",
+    "reason": "This 36-ply chain covers only the 13.5-19.5s window and was built on a misread queen. The whole 88-ply game is now reconstructed from the same recording, with the review screen's demonstrated moves removed. Kept as a fixture because the contract tests use its unresolved plies to prove the renderer gate blocks them.",
+    "superseded_on": "2026-08-20"
+  },
   "source": {
     "path": "<MoneyPrinterTurbo>/storage/local_videos/material-3cc02343e1b64dbeb464b7127ad0187b.mov",
     "kind": "duolingo_screen_recording",

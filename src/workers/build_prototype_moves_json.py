@@ -20,6 +20,12 @@ Verification status is assigned conservatively:
                           recording its bridge boundaries.
 
 Run:  uv run python src/workers/build_prototype_moves_json.py
+
+SUPERSEDED (2026-08-20) by src/workers/confirm_bridges.py, which emits the
+whole 88-ply game as tests/fixtures/full_game_moves.json. This builder covers
+only the 13.5-19.5s window and its chain rests on a misread queen. It stays in
+the tree because the contract tests use its unresolved plies to prove the
+renderer gate blocks them, and because prior probes are not deleted.
 """
 
 import json
