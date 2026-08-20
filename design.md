@@ -38,29 +38,41 @@ eval bar.
 The board is the information surface for the whole video. The mascot is a
 reaction layer that arrives, speaks, and leaves.
 
+Measured against the live 1080x1920 scene, not sketched:
+
 ```text
 ┌─────────────────────────┐
-│      [safe zone]        │
-│        HOOK TEXT        │  large, 2 lines max
-│                         │
-│    ┌───────────────┐    │
-│    │               │    │
-│    │  CHESS BOARD  │    │  ~76% width, centred
-│    │               │    │
-│    └───────────────┘    │
-│                         │
-│      eval bar / badge   │
-│                         │
-│   ┌─────────────────┐   │  caption band — always present
-│   │ narration line  │   │
-│   └─────────────────┘   │
-│      [safe zone]        │
+│      [safe zone <134]   │
+│ HOOK TEXT      ╭──────╮ │  hook left-aligned, 90..670, 2 lines max
+│ 146..310       │ pawn │ │  mascot 170..580, right-inset to x<=940
+│    ╭─────────╮ │      │ │  bubble 344..~490, tail points right
+│    │ bubble  ├─╯      │ │
+│    ╰─────────╯        │ │
+│  ┌───────────────────┐  │
+│  │ a b c d e f g h   │  │  frame 620..1428, coordinates drawn on all
+│  │  CHESS BOARD      │  │  four sides and flipped with the board
+│  │  720x720, 90px sq │  │
+│  └───────────────────┘  │
+│  [Move][Piece][Blunder] │  chips 1452..1556, badge only once the move lands
+│  [ Evaluation ▓▓▓░ 85% ]│  eval row 1572..1648
+│      [safe zone >1651]  │
 └─────────────────────────┘
 ```
 
-When a mascot popup is active, it enters from a screen edge and its speech
-bubble **replaces** the caption band rather than stacking above it — one text
-surface, never two competing.
+**The mascot peeks from the right, inset — never off the edge.** The right 13%
+is where TikTok and Reels paint their action buttons, so a character cut off by
+the frame edge is a character with a Share button on its face. It stops at
+x=940.
+
+**The bubble is the mascot's own surface**, entering and leaving with it, with a
+tail pointing at the pawn. It is not a second caption competing with the hook —
+when no cue is active there is no bubble at all.
+
+**Occlusion is satisfied by geometry.** The mascot occupies 170..580 and the
+board starts at 620, so a popup cannot cover the discussed squares no matter
+which ply is anchored. The rule stays written down because the guarantee is a
+property of this layout, not of the renderer: move the mascot over the board and
+the check has to come back.
 
 ## Board
 

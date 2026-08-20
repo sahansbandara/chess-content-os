@@ -24,6 +24,43 @@ Proposed / accepted / changed / rejected / experimental
 
 ---
 
+### 2026-08-20 — Mascot moves to a right-edge peek; the blocked character stays blocked
+
+**Decision:**
+Adopt the owner's mockup layout — hook top-left, character peeking from the
+right with a speech bubble, board framed with coordinates, move chips and an
+evaluation row beneath — and render it with the **pawn**. The human character in
+`assets/Character/2/` remains blocked.
+
+**Reason:**
+The layout is better than the bottom band it replaces: the bubble reads as
+speech rather than as a second caption, and the chips put the engine's verdict
+on screen as a fact rather than a sentence. Adopting it costs nothing.
+
+The character does not come with it. `assets/Character/` was blocked on
+2026-08-19 as derivative of Sherman (DreamWorks, *Mr. Peabody & Sherman*), and
+the mockup's pose — peek around a right-hand edge — is itself named in that
+decision as part of the identifying combination, being the composition of the
+reference promo still. A pawn peeking around an edge is not that character: what
+made the earlier set recognisable was ginger hair plus round glasses plus child
+proportions plus the pose, not the pose alone.
+
+**Alternatives considered:**
+Keeping the bottom band (loses the speech read); using the blocked art (a
+derivative work in monetised output, which Non-negotiable 7 forbids regardless
+of who generated the pixels).
+
+**Risk:**
+The mascot now sits above the board rather than below it, so the geometric
+occlusion guarantee holds for a different reason — 170..580 against a board
+starting at 620. It is still a property of the layout rather than of the
+renderer, so a future layout change can silently remove it.
+
+**Status:**
+accepted
+
+---
+
 ### 2026-08-20 — A recorded review screen is not a recorded game
 
 **Decision:**

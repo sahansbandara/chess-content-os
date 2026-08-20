@@ -208,10 +208,24 @@ Full phased plan: `docs/PLAN.md`.
   On this short: hook 0.00-3.50s, reaction 6.33-8.27s anchored to ply 56,
   outro 8.27-10.27s.
 
-  **Occlusion is now satisfied by geometry rather than by a check.** design.md
-  makes a mascot covering the discussed move's squares a hard scene failure;
-  with the Option A band sitting entirely below the board, the overlap cannot
-  occur. The validator is still worth writing if the layout ever changes.
+  **Occlusion is satisfied by geometry rather than by a check.** design.md makes
+  a mascot covering the discussed move's squares a hard scene failure; the
+  mascot occupies 170..580 and the board starts at 620, so the overlap cannot
+  occur. The validator is still worth writing — the guarantee is a property of
+  this layout, not of the renderer.
+
+- [x] **Layout rebuilt to the owner's mockup.** Hook left-aligned, pawn peeking
+  from the right with a speech bubble and tail, board in a frame with drawn
+  coordinates on all four sides, move/piece/quality chips, and an evaluation row.
+  The mascot is inset to x<=940 rather than cut off by the frame edge: the right
+  13% is where TikTok and Reels paint action buttons, so an edge-bled character
+  wears a Share button on its face. The last-move highlight turns red when the
+  engine calls the move an error, and the quality chip appears only once the
+  move has landed.
+
+  The human character from the mockup stays blocked — see
+  `Agent/DECISIONS.md`, 2026-08-20. Its peek-around-an-edge pose is named in the
+  original block as part of what made the reference recognisable.
 
 - [ ] **Two mascot nits, deliberately left.**
   - The reaction and the outro are back-to-back (both at frame 248), so the pawn

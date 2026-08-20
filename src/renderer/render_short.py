@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MOVES = ROOT / "tests/fixtures/prototype_moves.json"
 TEMPLATE = ROOT / "src/renderer/scene.html"
 SPRITES = ROOT / "assets/renderer/pieces/sprites"
-MASCOT = ROOT / "assets/renderer/mascot/pawn_neutral.png"
+MASCOT = ROOT / "assets/renderer/mascot/pawn_neutral_edge.png"
 
 W, H, FPS = 1080, 1920, 30
 HOOK_S = 1.6      # hold on the starting position before the first move
@@ -84,6 +84,8 @@ def build_scene(moves_path=None, hook=None, opening_caption=None):
                 "captured_piece": captured_piece,
                 "before": before,
                 "white_win": round(white_win, 2),
+                # the chips and the red highlight both read the engine's verdict
+                "label": a.get("label"),
                 "caption": caption_for(m, a),
             }
         )
