@@ -25,6 +25,12 @@
            font-size:24px;font-weight:700;letter-spacing:.5px}
   #movetxt{position:absolute;right:180px;top:1118px;width:400px;text-align:right;
            color:#E8EDF3;font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+  /* The mascot band. Option A in design.md: the board shrank to 720 so this
+     354px strip exists, which means the mascot can never overlap the discussed
+     squares — the occlusion rule is satisfied by geometry, not by a check. */
+  #mascot{position:absolute;left:100px;top:1146px;width:880px;height:354px;
+          background-repeat:no-repeat;background-position:bottom center;
+          background-size:contain;will-change:transform}
   #caption{position:absolute;left:130px;right:130px;bottom:300px;
            background:rgba(255,255,255,.08);border-left:8px solid #E0A33E;
            border-radius:12px;padding:30px 34px;color:#F2F5F8;
@@ -38,6 +44,7 @@
   <div id="evalwrap"><div id="evalfill"></div></div>
   <div id="evaltxt"></div>
   <div id="movetxt"></div>
+  <div id="mascot"></div>
   <div id="caption"></div>
 </div>
 
@@ -46,6 +53,8 @@ const SCENE = window.__SCENE__ || {};
 // Supplied piece art, keyed by FEN symbol. Absent means fall back to the
 // vector glyphs below, which is what shipped before the art existed.
 const PIECE_ART = window.__PIECE_ART__ || {};
+const MASCOT_ART = window.__MASCOT_ART__ || "";
+const CUES = SCENE.cues || [];
 const SQ = 90;
 const CREAM = "#F2EDDF", NAVY = "#1E2A44";
 
@@ -144,6 +153,33 @@ function xy(square){
   return { x: file * SQ, y: (8 - rank) * SQ };
 }
 
+// Popup lifecycle from design.md: slide in, overshoot, settle, hold, exit.
+// Driven entirely by the frame number — no wall-clock animation anywhere, or
+// the same input would stop producing the same output.
+const ENTER_F = 12, EXIT_F = 8;
+
+function backOut(t){
+  // overshoot then settle; the pawn arrives with weight rather than sliding to
+  // a dead stop
+  const c1 = 1.9, c3 = c1 + 1;
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+}
+
+function activeCue(frame){
+  for (const c of CUES)
+    if (frame >= c.start_frame && frame < c.end_frame) return c;
+  return null;
+}
+
+function mascotOffset(cue, frame){
+  // returns how far below its resting place the pawn sits, in pixels
+  const inFrames = frame - cue.start_frame;
+  const outFrames = cue.end_frame - frame;
+  if (inFrames < ENTER_F) return 354 * (1 - backOut(inFrames / ENTER_F));
+  if (outFrames < EXIT_F) return 354 * (1 - outFrames / EXIT_F);
+  return 0;
+}
+
 function drawSquares(){
   let h = "";
   for (let r = 0; r < 8; r++)
@@ -221,7 +257,20 @@ function renderFrame(n){
 
   document.getElementById("hook").innerHTML = SCENE.hook;
   document.getElementById("movetxt").textContent = started ? (mv.number + " " + mv.san) : "";
-  document.getElementById("caption").textContent = started ? mv.caption : SCENE.opening_caption;
+
+  // mascot, and the bubble that REPLACES the caption band rather than stacking
+  // above it — one text surface, never two competing (design.md)
+  const cue = MASCOT_ART ? activeCue(n) : null;
+  const mascot = document.getElementById("mascot");
+  if (cue) {
+    mascot.style.backgroundImage = "url(" + MASCOT_ART + ")";
+    mascot.style.transform = "translateY(" + mascotOffset(cue, n).toFixed(2) + "px)";
+  } else {
+    mascot.style.backgroundImage = "none";
+  }
+
+  const caption = started ? mv.caption : SCENE.opening_caption;
+  document.getElementById("caption").textContent = cue ? cue.text : caption;
 }
 
 drawSquares();

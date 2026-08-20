@@ -187,9 +187,42 @@ Full phased plan: `docs/PLAN.md`.
   exercises the data-URI path too. All four renderer tests green, including
   byte-identical frames across runs.
 
-- [ ] **Mascot art.** The band exists and is empty. `design.md` has the spec:
-  original pawn, max 880x354, transparent, standing pose, feet at the bottom,
-  rises from below the caption band. Same IP test as the pieces.
+- [x] **Mascot: art in, popups working.**
+  `assets/renderer/mascot/pawn_neutral.png`, normalised from the owner's
+  generated art into the 880x354 band with the feet on the bottom edge. Passes
+  every check: pawn silhouette with stub arms and no legs, eyes and eyebrows and
+  no mouth, exact palette match with the pieces (cream body, navy outline, amber
+  accent), flat vector with no shadow or gradient, clean alpha, legible on the
+  dark background and on a light square, and not recognisable as anyone's
+  existing character.
+
+  `src/renderer/mascot.py` schedules the popups, 8 tests. Cues anchor to a
+  **ply**, never a timestamp — the moment selector can shift the window and the
+  pacing constant changes again when narration drives it, and an absolute
+  timestamp goes stale silently the first time either happens. The reaction
+  waits for the move to land, because reacting mid-slide reads as reacting to
+  nothing. Text is never written by the mascot: the reaction quotes the caption
+  `analysis.json` already produced, so it cannot claim something the engine does
+  not support.
+
+  On this short: hook 0.00-3.50s, reaction 6.33-8.27s anchored to ply 56,
+  outro 8.27-10.27s.
+
+  **Occlusion is now satisfied by geometry rather than by a check.** design.md
+  makes a mascot covering the discussed move's squares a hard scene failure;
+  with the Option A band sitting entirely below the board, the overlap cannot
+  occur. The validator is still worth writing if the layout ever changes.
+
+- [ ] **Two mascot nits, deliberately left.**
+  - The reaction and the outro are back-to-back (both at frame 248), so the pawn
+    dips out and straight back in. Reads as a bounce; may want a gap.
+  - The mascot is on screen for ~7.7s of a 10.2s short (75%). design.md warns
+    against exactly that. It resolves itself at the ~35s target runtime, where
+    the same three popups cover ~22% — so fix the runtime first, not the cues.
+
+- [ ] **Remaining expressions.** Only the neutral pose exists. `design.md`
+  specifies ten states; the reaction beat in particular wants a dismayed one
+  rather than the resting face.
 
 The hook writes itself now and it is true: the app told the owner there was a
 better king move, and Stockfish independently names the same move.

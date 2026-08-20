@@ -18,12 +18,14 @@ from pathlib import Path
 import chess
 from playwright.sync_api import sync_playwright
 
+from src.renderer.mascot import cues_for
 from src.validators.moves_contract import validate_moves
 
 ROOT = Path(__file__).resolve().parents[2]
 MOVES = ROOT / "tests/fixtures/prototype_moves.json"
 TEMPLATE = ROOT / "src/renderer/scene.html"
 SPRITES = ROOT / "assets/renderer/pieces/sprites"
+MASCOT = ROOT / "assets/renderer/mascot/pawn_neutral.png"
 
 W, H, FPS = 1080, 1920, 30
 HOOK_S = 1.6      # hold on the starting position before the first move
@@ -71,6 +73,8 @@ def build_scene(moves_path=None, hook=None, opening_caption=None):
 
         moves.append(
             {
+                # the mascot's cues anchor to this, never to a timestamp
+                "ply": m["ply"],
                 "number": f"{(m['ply'] + 1) // 2}.{'' if m['side'] == 'w' else '..'}",
                 "san": m["san"],
                 "from": m["uci"][:2],
@@ -85,6 +89,11 @@ def build_scene(moves_path=None, hook=None, opening_caption=None):
         )
         board.push(mv)
 
+    # The mascot is cued off the selected moment, which the sliced document
+    # carries. Without one there is nothing to react to, and the schedule falls
+    # back to the hook and the outro.
+    moment_ply = (doc.get("moment") or {}).get("ply")
+
     return {
         "fps": FPS,
         # a1 is bottom-left for White, top-right for Black
@@ -96,7 +105,17 @@ def build_scene(moves_path=None, hook=None, opening_caption=None):
         "opening_caption": opening_caption or OPENING_CAPTION,
         "moves": moves,
         "content_id": doc["content_id"],
+        "outro_s": OUTRO_S,
+        "cues": cues_for(moves, moment_ply, FPS, HOOK_S, STEP_S, OUTRO_S),
     }
+
+
+def data_uri(path):
+    """Inline an image. See piece_sprites for why nothing is loaded by path."""
+    path = Path(path)
+    if not path.is_file():
+        return None
+    return "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode("ascii")
 
 
 def piece_sprites(sprite_dir=None):
@@ -162,7 +181,8 @@ def render(moves_path=None, hook=None, opening_caption=None):
         page = browser.new_page(viewport={"width": W, "height": H}, device_scale_factor=1)
         page.add_init_script(
             f"window.__SCENE__ = {json.dumps(scene)};\n"
-            f"window.__PIECE_ART__ = {json.dumps(piece_sprites())};"
+            f"window.__PIECE_ART__ = {json.dumps(piece_sprites())};\n"
+            f"window.__MASCOT_ART__ = {json.dumps(data_uri(MASCOT))};"
         )
         page.goto(TEMPLATE.as_uri())
         warm_up(page)
