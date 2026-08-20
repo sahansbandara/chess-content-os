@@ -103,9 +103,43 @@ Full phased plan: `docs/PLAN.md`.
 
 ## Current — next three tasks, in order
 
-- [ ] **Moment selector.** The whole 88-ply game is analysed but a short cannot
-  be 88 plies. Target ply 56 (`Kg6`, -35.04%) with the run-up from ply 53, and
-  cut the rest. `docs/PLAN.md` has the four-beat structure.
+- [x] **Moment selector** — `src/analysis/select_moment.py`, 13 tests. Picks the
+  **owner's** largest win-% drop, never the biggest number on the board (the
+  prototype game's largest is White's 71.`c4` at -47.24%, which a channel built
+  on the owner's own mistakes cannot lead with). Raises `NoMoment` rather than
+  promoting the least-good move when the owner played cleanly. Ties break to the
+  earlier ply so the same analysis always yields the same short.
+
+  `slice_moves` cuts the window into a document that still validates on its own
+  terms — replayed start position, castling rights and en-passant square carried
+  across the boundary, and ply numbers deliberately **not** renumbered, since
+  they are the join key into `analysis.json` and drive the on-screen move number.
+
+  On the prototype game it selects **plies 52-58 around ply 56 `Kg6`**:
+
+  ```text
+   52 b Kf7    best        -0.00%
+   53 w g5     inaccuracy  -5.07%
+   54 b h6     good        -3.30%
+   55 w Rf5+   blunder    -35.41%
+   56 b Kg6    blunder    -35.04%   <-- the moment
+   57 w Rd5    good        -1.94%
+   58 b hxg5   good        -1.42%
+  ```
+
+  White throws the game away and the owner hands it straight back. Rendered to
+  `output/content/2026-08-20-duolingo-003-full/short.mp4` — 307 frames,
+  1080x1920 @30fps, 10.2s. The eval bar settles at 53% after `Rf5+` and 87%
+  after `Kg6`, matching the engine.
+
+- [x] **Third validator gap closed.** `start_board` ignored the recorded
+  en-passant square, the same class of bug as the castling one. It bites exactly
+  here: a window that opens on the move after a double pawn push contains a
+  capture the validator would reject as illegal. 2 tests.
+
+- [ ] **Runtime is 10.2s, not ~35s.** `step_s` is a fixed 0.95s per ply. Length
+  should follow narration (`docs/PLAN.md` 1.6), so this closes when voice lands,
+  not by padding the constant.
 - [ ] **Pawn mascot popups** — `design.md` has the full spec, three per short,
   occlusion of the discussed squares is a hard validator failure.
 - [ ] **Voice and burned captions**, then a ~35s runtime instead of 12s.

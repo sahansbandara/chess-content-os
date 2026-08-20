@@ -24,6 +24,12 @@ def start_board(start_position):
     # in the contract are applied here.
     rights = (start_position.get("castling_rights") or {}).get("value")
     board.set_castling_fen(rights or "-")
+
+    # Same reasoning for en passant. A document that starts mid-game — a window
+    # sliced out for a short — can open on the move right after a double push,
+    # and that capture is illegal unless the square is restored.
+    square = (start_position.get("en_passant") or {}).get("value")
+    board.ep_square = chess.parse_square(square) if square else None
     return board
 
 

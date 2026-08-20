@@ -216,3 +216,24 @@ def test_start_board_is_exported_for_reuse():
     doc["start_position"]["castling_rights"] = {"value": "KQkq", "provenance": "inferred"}
 
     assert chess.Move.from_uci("e1g1") in start_board(doc["start_position"]).legal_moves
+
+
+def test_an_en_passant_capture_is_legal_when_the_start_position_records_the_square():
+    """The same gap castling had: a field the contract carries and nothing applies.
+
+    It bites whenever a document starts mid-game — a window sliced for a short
+    that opens right after a double pawn push contains a capture the validator
+    would otherwise reject as illegal.
+    """
+    doc = build_doc([move(1, "e5d6", "exd6", "w")],
+                    piece_placement="rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR")
+    doc["start_position"]["en_passant"] = {"value": "d6", "provenance": "replayed"}
+
+    assert validate_moves(doc) == []
+
+
+def test_without_the_recorded_square_the_same_capture_is_rejected():
+    doc = build_doc([move(1, "e5d6", "exd6", "w")],
+                    piece_placement="rnbqkbnr/ppp1pppp/8/3pP3/8/8/PPPP1PPP/RNBQKBNR")
+
+    assert [e["rule"] for e in validate_moves(doc)] == ["sequence_legal"]
