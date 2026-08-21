@@ -1,6 +1,6 @@
 # Chess Content OS — TODO
 
-> Last updated: 2026-08-20
+> Last updated: 2026-08-21
 > This file replaces the generic template task list with the actual Chess Content OS roadmap.
 
 ## Current milestone
@@ -590,6 +590,7 @@ If it passes, apply the same method to Bridges 16–19. If it fails, abandon Gem
 ### Gemini/provider work
 
 - [x] Configured two Gemini credential slots in `.env` without storing secrets in docs.
+- [x] Added an empty `OPENAI_API_KEY` slot to `.env.example`; no credential value stored.
 - [x] Verified one Gemini key label is currently working.
 - [x] Built `GeminiFallbackClient` provider seam.
 - [x] Tested full-video Gemini move extraction.
@@ -604,7 +605,13 @@ If it passes, apply the same method to Bridges 16–19. If it fails, abandon Gem
 - [x] Reviewed `wink-wink-wink555/blind_navigation` for deterministic CV → LLM architecture.
 - [x] Incorporated MCP / skills / evaluator / approval principles from `AI_Agent_Systems_Complete_Guide.md` into the project plan.
 
-## Last session summary — 2026-08-20
+## Last session summary — 2026-08-21
+
+Added blank `OPENAI_API_KEY` placeholder to `.env.example` and documented it as
+planned configuration. No OpenAI adapter exists yet; no credential value was
+stored. Existing `.env` ignore rule was verified.
+
+Prior milestone work:
 
 Rendered first complete visual short from verified recording. New original teen
 mascot replaces pawn in active format, with confident and regretful expressions

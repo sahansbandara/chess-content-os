@@ -30,6 +30,7 @@ Not yet implemented. Listed so the names are settled before the code is written.
 
 | Variable | Purpose | Phase |
 |---|---|---|
+| `OPENAI_API_KEY` | OpenAI provider credential; unused until the OpenAI provider adapter is implemented | 1 |
 | `STOCKFISH_PATH` | Path to the local Stockfish binary | 1 |
 | `PUBLISHING_ENABLED` | Master kill switch for all outward publishing. Anything other than `true` disables every publisher. | 2 |
 | `TELEGRAM_BOT_TOKEN` | Approval bot credential | 2 |
